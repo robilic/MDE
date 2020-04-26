@@ -1,5 +1,5 @@
 //
-//  viewportThumbnail.h
+//  ViewportThumbnail.h
 //  MDE
 //
 //  Created by robert on 4/26/20.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface viewportThumbnail : NSView
+@interface ViewportThumbnail : NSView
 
 @end
 

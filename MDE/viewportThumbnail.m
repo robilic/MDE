@@ -6,9 +6,9 @@
 //  Copyright © 2020 local. All rights reserved.
 //
 
-#import "viewportThumbnail.h"
+#import "ViewportThumbnail.h"
 
-@implementation viewportThumbnail {
+@implementation ViewportThumbnail {
     int viewportX, viewportY;
     float zoomFactor;
 }
@@ -24,7 +24,10 @@
     int thumbHeight, thumbWidth;
     thumbHeight = self.bounds.size.height;
     thumbWidth = self.bounds.size.width;
-    printf("\nThumbnail window height: %d width: %d \n", thumbHeight, thumbWidth);
+    
+    NSRect viewportLocation = NSMakeRect(20,60, 40,40);
+    [[NSColor selectedControlColor] set];
+    NSRectFill(viewportLocation);
    // You might want to use _bounds or self.bounds if you want to be sure to fill the entire bounds rect of the view.
 }
 
