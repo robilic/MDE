@@ -9,8 +9,9 @@
 #import <Cocoa/Cocoa.h>
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
+{
+}
 
-@property (weak) IBOutlet NSComboBox *zoomFactor;
 @property (weak) IBOutlet NSTextField *viewportYLocation;
 @property (weak) IBOutlet NSTextField *viewportXLocation;
 

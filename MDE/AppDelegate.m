@@ -17,6 +17,7 @@
 @interface AppDelegate ()
 
 @property (weak) IBOutlet NSWindow *window;
+
 @end
 
 @implementation AppDelegate
@@ -60,7 +61,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     fread(directory, sizeof(WADFileDirectoryEntry), header.dirsize, wadFile);
     
     for (int i = 0; i < header.dirsize; i++) {
-        if (!strncmp("E1M1", directory[i].name, 4)) {
+        if (!strncmp("E1M2", directory[i].name, 4)) {
             // printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
             // fread(<#void *restrict __ptr#>, <#size_t __size#>, <#size_t __nitems#>, FILE *restrict __stream)
             // printf("THINGS struct is %lu bytes each\n", sizeof(Thing));
@@ -119,6 +120,5 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     // Insert code here to tear down your application
 }
-
 
 @end
