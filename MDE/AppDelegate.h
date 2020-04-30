@@ -12,8 +12,5 @@
 {
 }
 
-@property (weak) IBOutlet NSTextField *viewportYLocation;
-@property (weak) IBOutlet NSTextField *viewportXLocation;
-
 @end
 

@@ -1,0 +1,8 @@
+
++ Wire up the zoom slider
+
+Implement the viewport thumbnail
+Draw vertexes
+Check if elements to draw are in the viewport or not
+Limit scrolling to 65,536 x 65,536
+Wire up viewport x/y labels

@@ -21,23 +21,31 @@ extern SideDef *sidedefs;
 float c;
 
 @implementation MapView {
-    float zoomFactor;
+    // float zoomFactor;
     NSPoint lastMouse;
     int16_t viewportX, viewportY; // upper left location of the viewport
-    // Zoom levels: 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 8.0
     float z;
     float c;
 }
 
 - (void)awakeFromNib {
     printf("AwakeFromNib()\n");
-    z = 0.5;
+    z = 3;
     viewportX = viewportY = -1000;
 }
 
 - (BOOL) isFlipped
 {
     return YES;
+}
+
+- (void)durf {
+    printf("Durf.\n");
+}
+
+- (void) setZoomFactor:(NSNumber *) zoomFactor {
+    z = [zoomFactor floatValue];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)drawRect:(NSRect)dirtyRect
