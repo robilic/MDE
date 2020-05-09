@@ -116,7 +116,6 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     NSLog(@"applicationDidFinishLaunching");
 }
 
-
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     // Insert code here to tear down your application
 }

@@ -9,26 +9,31 @@
 #import "ViewportThumbnail.h"
 
 @implementation ViewportThumbnail {
-    int viewportX, viewportY;
+    int viewportX, viewportY; // the upper left corner of the viewport/MapView
+    float mapViewWidth, mapViewHeight; // the size of the MapView
+    float thumbnailHeight, thumbnailWidth; // the thumbnail's view size, must be equal
     float zoomFactor;
+    float scale; // originally was going to be 65536 / 128 = 512
+}
+
+- (void)awakeFromNib {
+    NSRect thumbnailRect = [self bounds];
+    thumbnailHeight = thumbnailRect.size.height;
+    thumbnailWidth = thumbnailRect.size.width;
+    scale = 65536 / thumbnailWidth;
 }
 
 - (void) drawRect:(NSRect)dirtyRect {
     [super drawRect:dirtyRect];
-
-   // This next line sets the the current fill color parameter of the Graphics Context
     [[NSColor grayColor] setFill];
-   // This next function fills a rect the same as dirtyRect with the current fill color of the Graphics Context.
     NSRectFill(self.bounds);
-    
-    int thumbHeight, thumbWidth;
-    thumbHeight = self.bounds.size.height;
-    thumbWidth = self.bounds.size.width;
-    
-    NSRect viewportLocation = NSMakeRect(20,60, 40,40);
+        
+    NSRect viewportLocation =
+        NSMakeRect(((thumbnailWidth / 2) + viewportX) / scale, ((thumbnailHeight / 2) + viewportY) / scale,
+                   (mapViewWidth * zoomFactor) / scale, (mapViewHeight * zoomFactor) / scale);
+
     [[NSColor selectedControlColor] set];
     NSRectFill(viewportLocation);
-   // You might want to use _bounds or self.bounds if you want to be sure to fill the entire bounds rect of the view.
 }
 
 @end

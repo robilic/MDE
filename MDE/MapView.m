@@ -22,6 +22,7 @@ float c;
 
 @implementation MapView {
     // float zoomFactor;
+    int editMode;
     NSPoint lastMouse;
     int16_t viewportX, viewportY; // upper left location of the viewport
     float z;
@@ -32,6 +33,7 @@ float c;
     printf("AwakeFromNib()\n");
     z = 3;
     viewportX = viewportY = -1000;
+    editMode = EDIT_MODE_PAN;
 }
 
 - (BOOL) isFlipped
@@ -43,6 +45,10 @@ float c;
     printf("Durf.\n");
 }
 
+- (void) setEditMode:(int) m {
+    editMode = m;
+}
+
 - (void) setZoomFactor:(NSNumber *) zoomFactor {
     z = [zoomFactor floatValue];
     [self setNeedsDisplay:YES];
@@ -50,6 +56,8 @@ float c;
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    printf("Edit mode: %d\n", editMode);
+    
     [super drawRect:dirtyRect];
     // This next line sets the the current fill color parameter of the Graphics Context
     [[NSColor blackColor] setFill];
@@ -85,18 +93,28 @@ float c;
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-    lastMouse = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-    // subtract the difference from viewport coords to get new coords
+    switch (editMode) {
+        case EDIT_MODE_PAN:
+            //NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+            lastMouse = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+            // subtract the difference from viewport coords to get new coords
+            break;
+    }
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    // ghetto scrolling
     NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-    viewportX = ceil(viewportX + (z*(lastMouse.x-pointInView.x)));
-    viewportY = ceil(viewportY + (z*(lastMouse.y-pointInView.y)));
-    lastMouse = pointInView;
+
+    switch (editMode) {
+        case EDIT_MODE_PAN:
+            // ghetto scrolling
+            viewportX = ceil(viewportX + (z*(lastMouse.x-pointInView.x)));
+            viewportY = ceil(viewportY + (z*(lastMouse.y-pointInView.y)));
+            //printf("viewport is at %d, %d\n", viewportX, viewportY);
+            lastMouse = pointInView;
+            break;
+    }
     [self setNeedsDisplay:YES];
 }
 

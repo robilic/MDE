@@ -8,6 +8,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#define EDIT_MODE_PAN 0
+#define EDIT_MODE_THINGS 1
+#define EDIT_MODE_VERTEXES 2
+#define EDIT_MODE_LINEDEFS 3
+#define EDIT_MODE_SIDEDEFS 4
+#define EDIT_MODE_SECTORS 5
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MapView : NSView
@@ -15,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) isFlipped;
 - (void) durf;
 - (void) setZoomFactor:(NSNumber *) zoomFactor;
-
+- (void) setEditMode:(int) m;
 @end
 
 NS_ASSUME_NONNULL_END

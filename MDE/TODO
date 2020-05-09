@@ -1,8 +1,27 @@
 
 + Wire up the zoom slider
++ Wire up zoom pop-up
++ Wire up mode selector
 
-Implement the viewport thumbnail
-Draw vertexes
-Check if elements to draw are in the viewport or not
-Limit scrolling to 65,536 x 65,536
+Get map coords from mouse coords
+
 Wire up viewport x/y labels
+Draw vertexes
+Draw grid
+Implement the viewport thumbnail
+Check if elements to draw are in the viewport or not
+
+Thing detail window
+Vertex detail window
+
+Load textures/palettes
+
+
+Hotkeys:
+ Zoom
+ Scroll
+ ?
+
+Pinch to zoom?
+Limit scrolling to 65,536 x 65,536
+
