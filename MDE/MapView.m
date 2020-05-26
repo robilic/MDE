@@ -20,6 +20,9 @@ extern SideDef *sidedefs;
 
 float c;
 
+NSString *const MDEMapViewChangedNotification = @"MDEMapViewChanged";;
+NSNotificationCenter *nc;
+
 @implementation MapView {
     // float zoomFactor;
     int editMode;
@@ -34,6 +37,7 @@ float c;
     z = 3;
     viewportX = viewportY = -1000;
     editMode = EDIT_MODE_PAN;
+    nc = [NSNotificationCenter defaultCenter];
 }
 
 - (BOOL) isFlipped
@@ -56,7 +60,7 @@ float c;
 
 - (void)drawRect:(NSRect)dirtyRect
 {
-    printf("Edit mode: %d\n", editMode);
+//    printf("Edit mode: %d\n", editMode);
     
     [super drawRect:dirtyRect];
     // This next line sets the the current fill color parameter of the Graphics Context
@@ -93,11 +97,16 @@ float c;
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+
     switch (editMode) {
         case EDIT_MODE_PAN:
             //NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
             lastMouse = [self convertPoint:[theEvent locationInWindow] fromView:nil];
             // subtract the difference from viewport coords to get new coords
+            break;
+        default:
+            printf("Mouse is at: %f, %f\n", pointInView.x, pointInView.y); // x,y inside of mapview
             break;
     }
 }
@@ -113,9 +122,20 @@ float c;
             viewportY = ceil(viewportY + (z*(lastMouse.y-pointInView.y)));
             //printf("viewport is at %d, %d\n", viewportX, viewportY);
             lastMouse = pointInView;
+
+            NSNumber *vx = [NSNumber numberWithInt:viewportX];
+            NSNumber *vy = [NSNumber numberWithInt:viewportY];
+            NSDictionary *d = [NSDictionary dictionaryWithObjectsAndKeys:vx, @"vx", vy, @"vy", nil];
+            [nc postNotificationName:MDEMapViewChangedNotification
+                              object:self
+                            userInfo:d];
+            
+            //NSLog(@"Sending notification: %@", MDEMapViewChangedNotification);
             break;
     }
     [self setNeedsDisplay:YES];
+    [self superview];
+    
 }
 
 - (void)mouseUp:(NSEvent *)theEvent {

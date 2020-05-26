@@ -14,11 +14,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AppController : NSView {
-    IBOutlet NSTextField *viewportXlabel, *viewportYlabel;
     IBOutlet MapView *mv;
     IBOutlet ViewportThumbnail *vt;
     __weak IBOutlet NSPopUpButton *zoomSelect;
     __weak IBOutlet NSPopUpButtonCell *modeSelect;
+    IBOutlet NSTextField *viewPositionX;
+    IBOutlet NSTextField *viewPositionY;
 }
 
 - (IBAction)zoomChanged:(id)sender;
@@ -26,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)windowDidResize: (NSNotification *)notification;
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize;
-
+- (void)bark;
 
 
 @end

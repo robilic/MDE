@@ -2,17 +2,17 @@
 + Wire up the zoom slider
 + Wire up zoom pop-up
 + Wire up mode selector
-
-Get map coords from mouse coords
-
-Wire up viewport x/y labels
-Draw vertexes
-Draw grid
-Implement the viewport thumbnail
-Check if elements to draw are in the viewport or not
++ Get map coords from mouse coords
++ Wire up viewport x/y labels
 
 Thing detail window
 Vertex detail window
+Highlight item under cursor
+Show X/Y of cursor
+Check if elements to draw are in the viewport or not
+Draw vertexes
+Draw grid
+Implement the viewport thumbnail
 
 Load textures/palettes
 

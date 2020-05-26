@@ -10,10 +10,38 @@
 
 @implementation AppController
 
+- (id)init {
+    self = [super init];
+    if (self) {
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        [nc addObserver:self
+               selector:@selector(handleMapViewChange:)
+                   name:MDEMapViewChangedNotification
+                 object:nil];
+        NSLog(@"Registered with notification center");
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
     [super drawRect:dirtyRect];
-    
     // Drawing code here.
+}
+
+- (void)bark {
+    printf("Bark!\n");
+}
+
+- (void)handleMapViewChange:(NSNotification *)note
+{
+    // update x/y values
+    [viewPositionX setStringValue:[[note userInfo] objectForKey:@"vx"]];
+    [viewPositionY setStringValue:[[note userInfo] objectForKey:@"vy"]];
+    
 }
 
 - (IBAction)modeChanged:(id)sender {

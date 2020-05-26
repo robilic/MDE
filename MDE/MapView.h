@@ -23,6 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) durf;
 - (void) setZoomFactor:(NSNumber *) zoomFactor;
 - (void) setEditMode:(int) m;
+
 @end
+
+extern NSString *const MDEMapViewChangedNotification;
 
 NS_ASSUME_NONNULL_END
