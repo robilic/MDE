@@ -8,7 +8,10 @@
 
 #import "MapView.h"
 
+#include <math.h>
+
 #include "wadfile.h"
+
 
 extern int linedefs_count;
 extern int things_count;
@@ -32,12 +35,23 @@ NSNotificationCenter *nc;
     float c;
 }
 
-- (void)awakeFromNib {
+- (void) awakeFromNib {
     printf("AwakeFromNib()\n");
     z = 3;
     viewportX = viewportY = -1000;
     editMode = EDIT_MODE_PAN;
     nc = [NSNotificationCenter defaultCenter];
+}
+
+- (void) viewDidMoveToWindow
+{
+    int options = NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways | NSTrackingInVisibleRect;
+    NSTrackingArea *ta;
+    ta = [[NSTrackingArea alloc] initWithRect:NSZeroRect
+                                      options:options
+                                        owner:self
+                                     userInfo:nil];
+    [self addTrackingArea:ta];
 }
 
 - (BOOL) isFlipped
@@ -58,7 +72,7 @@ NSNotificationCenter *nc;
     [self setNeedsDisplay:YES];
 }
 
-- (void)drawRect:(NSRect)dirtyRect
+- (void) drawRect:(NSRect)dirtyRect
 {
 //    printf("Edit mode: %d\n", editMode);
     
@@ -70,7 +84,7 @@ NSNotificationCenter *nc;
     
     NSPoint start, end;
     int i;
-    // draw sidedefs
+    // draw SIDEDEFS
     for (i = 0; i < linedefs_count; i++) {
         start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (-vertexes[linedefs[i].start].y-viewportY) / z);
         end   = NSMakePoint((vertexes[linedefs[i].end].x-viewportX) / z, (-vertexes[linedefs[i].end].y-viewportY) / z);
@@ -79,11 +93,14 @@ NSNotificationCenter *nc;
         [[NSColor colorWithDeviceRed:0.8 green:c/225 blue:c/256 alpha:1.0] set];
         [NSBezierPath strokeLineFromPoint:start toPoint:end];
     }
-
+    
+    // draw VERTEXES
+    // NOT IMPLEMENTED
+    
+    // draw THINGS
     NSRect t;
     NSBezierPath *path;
-    
-    // draw vertexes
+
     for (i = 0; i < things_count; i++) {
         [[NSColor yellowColor] set];
         t = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((-things[i].ypos-viewportY)/z)-3, 6, 6);
@@ -91,11 +108,44 @@ NSNotificationCenter *nc;
         [path appendBezierPathWithOvalInRect: t];
         [path stroke];
     }
+    
+    // draw highlighted entity
+    // if MODE == "foo" ...
 }
 
-// Mouse events
+#pragma Mouse Events
 
-- (void)mouseDown:(NSEvent *)theEvent
+- (void) mouseEntered:(NSEvent *)theEvent
+{
+    [[self window] setAcceptsMouseMovedEvents:YES];
+    [[self window] makeFirstResponder:self];
+}
+
+- (void) mouseExited:(NSEvent *)theEvent
+{
+    [[self window] setAcceptsMouseMovedEvents:NO];
+}
+
+- (void) mouseMoved:(NSEvent *)theEvent
+{
+    static int lastXpos, lastYpos;
+    int curXpos, curYpos;
+    NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    curXpos = round(pointInView.x);
+    curYpos = round(pointInView.y);
+
+    if ((curXpos == lastXpos) && (curYpos == lastYpos)) {
+        // mouse didn't move far enough to matter
+    } else {
+        lastXpos = curXpos;
+        lastYpos = curYpos;
+        printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
+    }
+
+    // check for entity under mouse cursor
+}
+
+- (void) mouseDown:(NSEvent *)theEvent
 {
     NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
 
@@ -106,12 +156,13 @@ NSNotificationCenter *nc;
             // subtract the difference from viewport coords to get new coords
             break;
         default:
-            printf("Mouse is at: %f, %f\n", pointInView.x, pointInView.y); // x,y inside of mapview
+            printf("Mouse is at view coords: %f, %f\n", pointInView.x, pointInView.y); // x,y inside of mapview
+            printf("Mouse is at level coords: %f, %f\n", viewportX + pointInView.x, viewportY + pointInView.y);
             break;
     }
 }
 
-- (void)mouseDragged:(NSEvent *)theEvent
+- (void) mouseDragged:(NSEvent *)theEvent
 {
     NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
 
@@ -138,7 +189,7 @@ NSNotificationCenter *nc;
     
 }
 
-- (void)mouseUp:(NSEvent *)theEvent {
+- (void) mouseUp:(NSEvent *)theEvent {
     // do we even need to do anything here?
 }
 
