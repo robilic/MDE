@@ -8,12 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#define EDIT_MODE_PAN 0
-#define EDIT_MODE_THINGS 1
+#define EDIT_MODE_PAN      0
+#define EDIT_MODE_THINGS   1
 #define EDIT_MODE_VERTEXES 2
 #define EDIT_MODE_LINEDEFS 3
 #define EDIT_MODE_SIDEDEFS 4
-#define EDIT_MODE_SECTORS 5
+#define EDIT_MODE_SECTORS  5
 
 NS_ASSUME_NONNULL_BEGIN
 

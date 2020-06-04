@@ -33,6 +33,7 @@ NSNotificationCenter *nc;
     int16_t viewportX, viewportY; // upper left location of the viewport
     float z;
     float c;
+    int selectedObject;   // thing we have selected
 }
 
 - (void) awakeFromNib {
@@ -41,6 +42,7 @@ NSNotificationCenter *nc;
     viewportX = viewportY = -1000;
     editMode = EDIT_MODE_PAN;
     nc = [NSNotificationCenter defaultCenter];
+    selectedObject = -1;
 }
 
 - (void) viewDidMoveToWindow
@@ -74,20 +76,17 @@ NSNotificationCenter *nc;
 
 - (void) drawRect:(NSRect)dirtyRect
 {
-//    printf("Edit mode: %d\n", editMode);
-    
-    [super drawRect:dirtyRect];
-    // This next line sets the the current fill color parameter of the Graphics Context
-    [[NSColor blackColor] setFill];
-    // This next function fills a rect the same as dirtyRect with the current fill color of the Graphics Context.
-    NSRectFill(dirtyRect);
-    
-    NSPoint start, end;
     int i;
+    NSPoint start, end;
+    [super drawRect:dirtyRect];
+
+    // Draw background
+    [[NSColor blackColor] setFill];
+    NSRectFill(dirtyRect);
     // draw SIDEDEFS
     for (i = 0; i < linedefs_count; i++) {
-        start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (-vertexes[linedefs[i].start].y-viewportY) / z);
-        end   = NSMakePoint((vertexes[linedefs[i].end].x-viewportX) / z, (-vertexes[linedefs[i].end].y-viewportY) / z);
+        start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (vertexes[linedefs[i].start].y-viewportY) / z);
+        end   = NSMakePoint((vertexes[linedefs[i].end].x-viewportX) / z, (vertexes[linedefs[i].end].y-viewportY) / z);
         c = 50 + (sidedefs[linedefs[i].sidedef1].sector * 2);
         //printf("%f %f ", c, c/256);
         [[NSColor colorWithDeviceRed:0.8 green:c/225 blue:c/256 alpha:1.0] set];
@@ -103,7 +102,7 @@ NSNotificationCenter *nc;
 
     for (i = 0; i < things_count; i++) {
         [[NSColor yellowColor] set];
-        t = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((-things[i].ypos-viewportY)/z)-3, 6, 6);
+        t = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((things[i].ypos-viewportY)/z)-3, 6, 6);
         path = [NSBezierPath bezierPath];
         [path appendBezierPathWithOvalInRect: t];
         [path stroke];
@@ -111,6 +110,13 @@ NSNotificationCenter *nc;
     
     // draw highlighted entity
     // if MODE == "foo" ...
+    if (selectedObject > -1) {
+        [[NSColor cyanColor] set];
+        t = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-3, ((things[selectedObject].ypos-viewportY)/z)-3, 6, 6);
+        path = [NSBezierPath bezierPath];
+        [path appendBezierPathWithOvalInRect: t];
+        [path stroke];
+    }
 }
 
 #pragma Mouse Events
@@ -131,6 +137,8 @@ NSNotificationCenter *nc;
     static int lastXpos, lastYpos;
     int curXpos, curYpos;
     NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    // we have WINDOW coords and we have LEVEL coords....
+    
     curXpos = round(pointInView.x);
     curYpos = round(pointInView.y);
 
@@ -139,10 +147,39 @@ NSNotificationCenter *nc;
     } else {
         lastXpos = curXpos;
         lastYpos = curYpos;
-        printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
     }
+    // calc level coords
+    // move these to structs....
+    int cursorLevelPosX = viewportX + (curXpos * z);
+    int cursorLevelPosY = viewportY + (curYpos * z);
+    
+    int i;
+    
+    int hit_radius = 5 * z;
+    switch (editMode) {
+        case EDIT_MODE_PAN:
+            printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
+            break;
+        case EDIT_MODE_THINGS:
+            for (i = 0; i < things_count; i++) {
+                if ((cursorLevelPosX > things[i].xpos - hit_radius) && (cursorLevelPosX < things[i].xpos + hit_radius)) {
+                    if ((cursorLevelPosY > things[i].ypos - hit_radius) && (cursorLevelPosY < things[i].ypos + hit_radius)) {
+/*                        printf("Mouse hit on thing %d\n", i);
+                        printf("THING is at coords %d, %d\n", things[i].xpos, things[i].ypos);
+                        printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
+                        printf("Mouse is at LEVEL coords %d, %d\n", cursorLevelPosX, cursorLevelPosY);
+*/
+                        // move this code to selectObject function?
+                        selectedObject = i;
+                        [self setNeedsDisplay:YES];                    }
+                }
+                NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((-things[i].ypos-viewportY)/z)-3, 6, 6);
+            }
 
-    // check for entity under mouse cursor
+            break;
+        default:
+            break;
+    }
 }
 
 - (void) mouseDown:(NSEvent *)theEvent
@@ -186,11 +223,6 @@ NSNotificationCenter *nc;
     }
     [self setNeedsDisplay:YES];
     [self superview];
-    
-}
-
-- (void) mouseUp:(NSEvent *)theEvent {
-    // do we even need to do anything here?
 }
 
 @end
