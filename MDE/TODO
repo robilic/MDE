@@ -5,9 +5,13 @@
 + Get map coords from mouse coords
 + Wire up viewport x/y labels
 
-Show X/Y of cursor
-Hit detection for items
-Highlight item under cursor
++ Show X/Y of cursor
++ Hit detection for things
++ Highlight for things
+
+Hit detection for lines
+Highlight for lines
+
 Thing detail window
 Vertex detail window
 Check if elements to draw are in the viewport or not

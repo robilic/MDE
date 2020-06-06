@@ -117,3 +117,10 @@ typedef struct
 #define OBJ_BLOCKMAP            10
 
 #endif /* wadfile_h */
+
+/* Floor and ceiling textures */
+typedef struct
+{
+    char name[8];
+    char data[4096];
+} Texture;

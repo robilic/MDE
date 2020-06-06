@@ -112,7 +112,7 @@ NSNotificationCenter *nc;
     // if MODE == "foo" ...
     if (selectedObject > -1) {
         [[NSColor cyanColor] set];
-        t = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-3, ((things[selectedObject].ypos-viewportY)/z)-3, 6, 6);
+        t = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-5, ((things[selectedObject].ypos-viewportY)/z)-5, 10, 10);
         path = [NSBezierPath bezierPath];
         [path appendBezierPathWithOvalInRect: t];
         [path stroke];
@@ -158,13 +158,14 @@ NSNotificationCenter *nc;
     int hit_radius = 5 * z;
     switch (editMode) {
         case EDIT_MODE_PAN:
-            printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
+//            printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
             break;
         case EDIT_MODE_THINGS:
             for (i = 0; i < things_count; i++) {
                 if ((cursorLevelPosX > things[i].xpos - hit_radius) && (cursorLevelPosX < things[i].xpos + hit_radius)) {
                     if ((cursorLevelPosY > things[i].ypos - hit_radius) && (cursorLevelPosY < things[i].ypos + hit_radius)) {
-/*                        printf("Mouse hit on thing %d\n", i);
+                        printf("Mouse hit on thing %d, type = %x (%d), attributes = %x\n", i, things[i].type, things[i].type, things[i].when);
+/*
                         printf("THING is at coords %d, %d\n", things[i].xpos, things[i].ypos);
                         printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
                         printf("Mouse is at LEVEL coords %d, %d\n", cursorLevelPosX, cursorLevelPosY);
@@ -193,8 +194,9 @@ NSNotificationCenter *nc;
             // subtract the difference from viewport coords to get new coords
             break;
         default:
-            printf("Mouse is at view coords: %f, %f\n", pointInView.x, pointInView.y); // x,y inside of mapview
-            printf("Mouse is at level coords: %f, %f\n", viewportX + pointInView.x, viewportY + pointInView.y);
+            printf("mouseDown event\n");
+            //printf("Mouse is at view coords: %f, %f\n", pointInView.x, pointInView.y); // x,y inside of mapview
+            //printf("Mouse is at level coords: %f, %f\n", viewportX + pointInView.x, viewportY + pointInView.y);
             break;
     }
 }

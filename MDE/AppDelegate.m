@@ -27,6 +27,8 @@ LineDef *linedefs;
 SideDef *sidedefs;
 Vertex *vertexes;
 
+Texture *textures;
+
 SEG *segs;
 SSector *ssectors;
 Node *nodes;
@@ -42,6 +44,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     FILE *wadFile;
     WADFileHeader header;
     WADFileDirectoryEntry *directory;
+    int textures_pointer = 0;
     
     wadFile = fopen("/Users/robert/Downloads/Doom/Proj/DOOM1.WAD", "r");
     
@@ -60,10 +63,11 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     fseek(wadFile, header.dirstart, SEEK_SET);
     fread(directory, sizeof(WADFileDirectoryEntry), header.dirsize, wadFile);
     
+    // find the desired level and load the data for it
     for (int i = 0; i < header.dirsize; i++) {
-        if (!strncmp("E1M4", directory[i].name, 4)) {
+        if (!strncmp("E1M2", directory[i].name, 4)) {
             // printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
-            // fread(<#void *restrict __ptr#>, <#size_t __size#>, <#size_t __nitems#>, FILE *restrict __stream)
+            // fread(void *restrict __ptr, size_t __size, size_t __nitems, FILE *restrict __stream)
             // printf("THINGS struct is %lu bytes each\n", sizeof(Thing));
             // printf("THINGS start at %d and consist of %d bytes\n", directory[i+1].start, directory[i+1].size);
             fseek(wadFile, directory[i+1].start, SEEK_SET);
@@ -88,7 +92,41 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
         }
         //printf("%.*s ", 8, directory[i].name);
     }
+    
+    // load floor and ceiling textures, count them first. find the start of textures
+    int textures_count = 0;
+    for (int i = 0; i < header.dirsize; i++) {
+        if (!strncmp("F1_START", directory[i].name, 7)) {
+            printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
+            textures_pointer = i + 1;
+            break;
+        }
+    }
 
+    // go through the directory until we get to the end of the textures
+    for (int i = textures_pointer; i < header.dirsize; i++) {
+        if (!strncmp("F1_END", directory[i].name, 6)) {
+            break;
+        }
+        textures_count = i - textures_pointer;
+    }
+
+    printf("Next entry is %.*s\n", 8, directory[textures_pointer].name);
+    printf("Total textures found = %d\n", textures_count);
+
+    fseek(wadFile, directory[textures_pointer].start, SEEK_SET);
+    textures = malloc(sizeof(Texture) * textures_count);
+    for (int i = 0; i < textures_count; i++) {
+        // copy the name from the directory to the textures structure
+        memcpy(textures[i].name, directory[textures_pointer + i].name, 8);
+        // now the image data
+        fread(textures[i].data, 4096, 1, wadFile);
+    }
+    // for debugging
+    for (int i = 0; i < textures_count; i++) {
+        printf("Texture %d is %.*s\n", i, 8, textures[i].name);
+    }
+    
     fclose(wadFile);
     
     /* dump sidedefs
