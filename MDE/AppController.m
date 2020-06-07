@@ -8,6 +8,11 @@
 
 #import "AppController.h"
 
+#include "wadfile.h"
+
+extern Texture *textures;
+extern Palette *palette;
+
 @implementation AppController
 
 - (id)init {
@@ -32,8 +37,53 @@
     // Drawing code here.
 }
 
-- (void)bark {
+- (void)panClicked:(id)sender {
     printf("Bark!\n");
+    
+    NSImage *image;
+    int width, height;
+    width = height = 64;
+    int sourceLength = 4096; // source is indexed 8-bit color
+    size_t bufferLength = width * height * 4;
+     
+    // step through image data 64x64
+    // create 4 bpp version using palette
+    // data = malloc(32*4096)
+    //
+    unsigned char *data;
+    data = malloc(sizeof(unsigned char) * 4 * 4096);
+    int idx;
+    for (int i = 0; i < 4096; i++) {
+        idx = i * 4;
+        data[idx + 0] = palette[textures[27].data[i]].r;
+        data[idx + 1] = palette[textures[27].data[i]].g;
+        data[idx + 2] = palette[textures[27].data[i]].b;
+        data[idx + 3] = 255; // alpha
+    }
+     
+    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, data, bufferLength, NULL);
+    size_t bitsPerComponent = 8;
+    size_t bitsPerPixel = 32;
+    size_t bytesPerRow = 4 * width;
+    CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast;
+    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+
+    CGImageRef iref = CGImageCreate(width,
+                                    height,
+                                    bitsPerComponent,
+                                    bitsPerPixel,
+                                    bytesPerRow,
+                                    colorSpaceRef,
+                                    bitmapInfo,
+                                    provider,   // data provider
+                                    NULL,       // decode
+                                    YES,        // should interpolate
+                                    renderingIntent);
+
+    image = [[NSImage alloc] initWithCGImage:iref size:NSMakeSize(width, height)];
+    [textureView setImage:image];
+    
 }
 
 - (void)handleMapViewChange:(NSNotification *)note

@@ -28,6 +28,7 @@ SideDef *sidedefs;
 Vertex *vertexes;
 
 Texture *textures;
+Palette *palette;
 
 SEG *segs;
 SSector *ssectors;
@@ -91,6 +92,20 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
             fread(vertexes, sizeof(Vertex), directory[i+4].size / sizeof(Vertex), wadFile);
         }
         //printf("%.*s ", 8, directory[i].name);
+    }
+    // load color palette
+    for (int i = 0; i < header.dirsize; i++) {
+        if (!strncmp("PLAYPAL", directory[i].name, 7)) {
+            printf("\nFound PLAYPAL! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
+            palette = malloc(sizeof(char) * 768); // we only need the first palette
+            fseek(wadFile, directory[i].start, SEEK_SET);
+            fread(palette, 768, 1, wadFile);
+            break;
+        }
+    }
+    printf("Palette dump:\n");
+    for (int i = 0; i < 768; i += 3) {
+        printf("%d: %x %x %x\n", i/3, palette[i/3].r, palette[i/3].g, palette[i/3].b);
     }
     
     // load floor and ceiling textures, count them first. find the start of textures

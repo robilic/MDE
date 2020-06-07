@@ -118,9 +118,18 @@ typedef struct
 
 #endif /* wadfile_h */
 
+/* Palette data */
+typedef struct
+{
+    unsigned char r, g, b;
+} Palette;
+
 /* Floor and ceiling textures */
 typedef struct
 {
     char name[8];
-    char data[4096];
+    unsigned char data[4096];
 } Texture;
+
+/* Sprites */
+
