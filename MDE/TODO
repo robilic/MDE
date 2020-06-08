@@ -12,6 +12,7 @@
 Hit detection for lines
 Highlight for lines
 
+Make functions for seeking/reading WAD files
 Thing detail window
 Vertex detail window
 Check if elements to draw are in the viewport or not

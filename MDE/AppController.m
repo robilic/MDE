@@ -39,6 +39,11 @@ extern Palette *palette;
 
 - (void)panClicked:(id)sender {
     printf("Bark!\n");
+
+}
+
+- (void)fooClicked:(id)sender {
+    printf("Bark!\n");
     
     NSImage *image;
     int width, height;
@@ -78,7 +83,7 @@ extern Palette *palette;
                                     bitmapInfo,
                                     provider,   // data provider
                                     NULL,       // decode
-                                    YES,        // should interpolate
+                                    NO,        // should interpolate
                                     renderingIntent);
 
     image = [[NSImage alloc] initWithCGImage:iref size:NSMakeSize(width, height)];

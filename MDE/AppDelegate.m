@@ -29,6 +29,7 @@ Vertex *vertexes;
 
 Texture *textures;
 Palette *palette;
+Sprite *sprites;
 
 SEG *segs;
 SSector *ssectors;
@@ -46,6 +47,9 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     WADFileHeader header;
     WADFileDirectoryEntry *directory;
     int textures_pointer = 0;
+    int textures_count = 0;
+    int sprites_pointer = 0;
+    int sprites_count = 0;
     
     wadFile = fopen("/Users/robert/Downloads/Doom/Proj/DOOM1.WAD", "r");
     
@@ -93,6 +97,8 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
         }
         //printf("%.*s ", 8, directory[i].name);
     }
+    
+    //
     // load color palette
     for (int i = 0; i < header.dirsize; i++) {
         if (!strncmp("PLAYPAL", directory[i].name, 7)) {
@@ -108,8 +114,8 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
         printf("%d: %x %x %x\n", i/3, palette[i/3].r, palette[i/3].g, palette[i/3].b);
     }
     
+    //
     // load floor and ceiling textures, count them first. find the start of textures
-    int textures_count = 0;
     for (int i = 0; i < header.dirsize; i++) {
         if (!strncmp("F1_START", directory[i].name, 7)) {
             printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
@@ -119,6 +125,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     }
 
     // go through the directory until we get to the end of the textures
+    // TODO: why count these when we can check for this as we read them?
     for (int i = textures_pointer; i < header.dirsize; i++) {
         if (!strncmp("F1_END", directory[i].name, 6)) {
             break;
@@ -141,6 +148,37 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     for (int i = 0; i < textures_count; i++) {
         printf("Texture %d is %.*s\n", i, 8, textures[i].name);
     }
+    
+    //
+    // load sprites
+    for (int i = 0; i < header.dirsize; i++) {
+        if (!strncmp("S_START", directory[i].name, 7)) {
+            sprites_pointer = i + 1;
+            break;
+        }
+    }
+    for (int i = sprites_pointer; i < header.dirsize; i++) {
+        if (!strncmp("S_END", directory[i].name, 5)) {
+            break;
+        }
+        sprites_count = i - sprites_pointer;
+    }
+    
+    sprites = malloc(sizeof(Sprite) * 1);
+    fseek(wadFile, directory[sprites_pointer].start, SEEK_SET);
+    fread(sprites, sizeof(Sprite), 1, wadFile);
+    printf("Sprite %.*s is %dx%d\n", 8, directory[sprites_pointer].name, sprites[0].width, sprites[0].height);
+
+    unsigned char *sprite_image;
+    sprite_image = malloc(sizeof(unsigned char) * sprites[0].width * sprites[0].height);
+    
+    // 4 ints, w, h, left_offset, top_offset
+    // width # of long pointers to rows of data
+    // each row (bytes): row to start drawing
+    //                   pixel count
+    //                   blank byte, picture data bytes, blank
+    //                   FF ends column (also will signify empty row)
+    //                   other wise draw more data for this column
     
     fclose(wadFile);
     
