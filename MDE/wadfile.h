@@ -131,12 +131,11 @@ typedef struct
     unsigned char data[4096];
 } Texture;
 
-/* Sprites */
+/* Sprites, the headers at least */
 typedef struct
 {
-    uint16 width;
-    uint16 height;
-    uint16 left_offset;
-    uint16 top_offset;
-    unsigned char *pixel_data;
+    int16_t width;
+    int16_t height;
+    int16_t left_offset;
+    int16_t top_offset;
 } Sprite;

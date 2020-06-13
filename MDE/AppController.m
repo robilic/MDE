@@ -53,8 +53,7 @@ extern Palette *palette;
      
     // step through image data 64x64
     // create 4 bpp version using palette
-    // data = malloc(32*4096)
-    //
+
     unsigned char *data;
     data = malloc(sizeof(unsigned char) * 4 * 4096);
     int idx;
@@ -81,9 +80,9 @@ extern Palette *palette;
                                     bytesPerRow,
                                     colorSpaceRef,
                                     bitmapInfo,
-                                    provider,   // data provider
-                                    NULL,       // decode
-                                    NO,        // should interpolate
+                                    provider,
+                                    NULL,
+                                    NO,
                                     renderingIntent);
 
     image = [[NSImage alloc] initWithCGImage:iref size:NSMakeSize(width, height)];

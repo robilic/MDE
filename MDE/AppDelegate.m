@@ -109,10 +109,12 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
             break;
         }
     }
+    /*
     printf("Palette dump:\n");
     for (int i = 0; i < 768; i += 3) {
         printf("%d: %x %x %x\n", i/3, palette[i/3].r, palette[i/3].g, palette[i/3].b);
     }
+    */
     
     //
     // load floor and ceiling textures, count them first. find the start of textures
@@ -145,10 +147,11 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
         fread(textures[i].data, 4096, 1, wadFile);
     }
     // for debugging
+    /*
     for (int i = 0; i < textures_count; i++) {
         printf("Texture %d is %.*s\n", i, 8, textures[i].name);
     }
-    
+    */
     //
     // load sprites
     for (int i = 0; i < header.dirsize; i++) {
@@ -163,11 +166,12 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
         }
         sprites_count = i - sprites_pointer;
     }
-    
-    sprites = malloc(sizeof(Sprite) * 1);
+    // read all the sprite headers
+    sprites = malloc(sizeof(Sprite) * sprites_count);
     fseek(wadFile, directory[sprites_pointer].start, SEEK_SET);
-    fread(sprites, sizeof(Sprite), 1, wadFile);
-    printf("Sprite %.*s is %dx%d\n", 8, directory[sprites_pointer].name, sprites[0].width, sprites[0].height);
+    fread(sprites, sizeof(Sprite), sprites_count, wadFile);
+    
+    printf("Sprite %.*s is %dx%d found at %d. left offset = %d, top_offset = %d\n", 8, directory[sprites_pointer].name, sprites[0].width, sprites[0].height, directory[sprites_pointer].start, sprites[0].left_offset, sprites[0].top_offset);
 
     unsigned char *sprite_image;
     sprite_image = malloc(sizeof(unsigned char) * sprites[0].width * sprites[0].height);
@@ -180,6 +184,42 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     //                   FF ends column (also will signify empty row)
     //                   other wise draw more data for this column
     
+    // go to the start of the sprite data
+    // sprites_pointer is the first/starting sprite
+    fseek(wadFile, directory[sprites_pointer].start + 8, SEEK_SET);
+    int32_t image_offset; // where we are drawing in the current sprite
+    unsigned char b1, b2;
+    int column_pointers[320];
+    fread(&column_pointers, sizeof(int32_t), sprites[0].width, wadFile);
+    // column pointer offset must be added to: sprite_data_start + 8 byte header + (4 bytes * sprite_width)
+    
+    int sprite_data_start = directory[sprites_pointer].start;
+    printf("Sprite data starts at: %d %x\n", sprite_data_start, sprite_data_start);
+    
+    for (int i = 0; i < sprites[0].width; i++) {
+        //printf("Sprite column %d data lives at %d %x\n", i, column_pointers[i], column_pointers[i]);
+        fseek(wadFile, sprite_data_start + column_pointers[i], SEEK_SET);
+        image_offset = sprites[0].width * i;
+
+        while (TRUE) {
+            fread(&b1, sizeof(unsigned char), 1, wadFile); // row to start drawing
+            if (b1 == 0xff) {
+                printf("Breaking on column %d\n", i);
+                break; // this whole line is blank/transparent
+            } else {
+                // this is not right...
+                printf("Drawing column %d, starting at row %d\n", i, b1);
+                image_offset += b1;
+                printf("image_offset = %d\n", image_offset);
+                fread(&b2, sizeof(unsigned char), 1, wadFile); // count of data bytes
+                fseek(wadFile, 1, SEEK_CUR); // skip first byte
+                printf("Copying %d bytes\n", b2);
+                fread(&sprite_image[image_offset], sizeof(unsigned char) * b2, 1, wadFile);
+                image_offset += b2;
+                fseek(wadFile, 1, SEEK_CUR); // skip last byte
+            }
+        }
+    }
     fclose(wadFile);
     
     /* dump sidedefs
