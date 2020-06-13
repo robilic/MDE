@@ -87,7 +87,7 @@ extern Palette *palette;
 
     image = [[NSImage alloc] initWithCGImage:iref size:NSMakeSize(width, height)];
     [textureView setImage:image];
-    
+    free(data);    
 }
 
 - (void)handleMapViewChange:(NSNotification *)note

@@ -8,10 +8,19 @@
 + Show X/Y of cursor
 + Hit detection for things
 + Highlight for things
++ Load ceiling/floor textures
++ Load palettes
 
+Load wall textures
+Load sprites
 Hit detection for lines
 Highlight for lines
+Hit detection for vertex
+Highlight for vertex
+Be able to move a vertex
+Be able to move a thing
 
+Show x/y for mouse cursor
 Make functions for seeking/reading WAD files
 Thing detail window
 Vertex detail window
@@ -22,7 +31,6 @@ Draw grid
 Implement the viewport thumbnail
 Limit maps to +/- 10,000 instead of 32768?
 
-Load textures/palettes
 
 
 Hotkeys:

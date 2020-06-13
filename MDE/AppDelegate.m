@@ -191,7 +191,6 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     unsigned char b1, b2;
     int column_pointers[320];
     fread(&column_pointers, sizeof(int32_t), sprites[0].width, wadFile);
-    // column pointer offset must be added to: sprite_data_start + 8 byte header + (4 bytes * sprite_width)
     
     int sprite_data_start = directory[sprites_pointer].start;
     printf("Sprite data starts at: %d %x\n", sprite_data_start, sprite_data_start);
@@ -199,7 +198,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     for (int i = 0; i < sprites[0].width; i++) {
         //printf("Sprite column %d data lives at %d %x\n", i, column_pointers[i], column_pointers[i]);
         fseek(wadFile, sprite_data_start + column_pointers[i], SEEK_SET);
-        image_offset = sprites[0].width * i;
+        image_offset = sprites[0].height * i;
 
         while (TRUE) {
             fread(&b1, sizeof(unsigned char), 1, wadFile); // row to start drawing
@@ -220,6 +219,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
             }
         }
     }
+    printf("Closing .WAD file\n");
     fclose(wadFile);
     
     /* dump sidedefs
