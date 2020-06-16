@@ -12,6 +12,9 @@
 
 extern Texture *textures;
 extern Palette *palette;
+extern Sprite *sprites;
+extern unsigned char **sprite_images;
+extern int TARGET_SPRITE;
 
 @implementation AppController
 
@@ -40,6 +43,53 @@ extern Palette *palette;
 - (void)panClicked:(id)sender {
     printf("Bark!\n");
 
+    NSImage *image;
+    int width, height;
+    width = sprites[TARGET_SPRITE].height;
+    height = sprites[TARGET_SPRITE].width;
+    
+    int pixel_count = width * height; // source is indexed 8-bit color
+    int bpp = 4;
+    size_t bufferLength = pixel_count * bpp;
+    
+    printf("panClicked - sprite %d, width %d, height %d, pixel_count %d\n", TARGET_SPRITE, width, height, pixel_count);
+     
+    // step through image data 64x64
+    // create 4 bpp version using palette
+
+    unsigned char *data;
+    data = malloc(sizeof(unsigned char) * bufferLength);
+    int idx;
+    for (int i = 0; i < pixel_count; i++) {
+        idx = i * 4;
+        data[idx + 0] = palette[sprite_images[TARGET_SPRITE][i]].r;
+        data[idx + 1] = palette[sprite_images[TARGET_SPRITE][i]].g;
+        data[idx + 2] = palette[sprite_images[TARGET_SPRITE][i]].b;
+        data[idx + 3] = 255; // alpha
+    }
+     
+    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, data, bufferLength, NULL);
+    size_t bitsPerComponent = 8;
+    size_t bitsPerPixel = 32;
+    size_t bytesPerRow = 4 * width;
+    CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast;
+    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+
+    CGImageRef iref = CGImageCreate(width,
+                                    height,
+                                    bitsPerComponent,
+                                    bitsPerPixel,
+                                    bytesPerRow,
+                                    colorSpaceRef,
+                                    bitmapInfo,
+                                    provider,
+                                    NULL,
+                                    NO,
+                                    renderingIntent);
+
+    image = [[NSImage alloc] initWithCGImage:iref size:NSMakeSize(width, height)];
+    [textureView setImage:image];
 }
 
 - (void)fooClicked:(id)sender {
@@ -48,7 +98,6 @@ extern Palette *palette;
     NSImage *image;
     int width, height;
     width = height = 64;
-    int sourceLength = 4096; // source is indexed 8-bit color
     size_t bufferLength = width * height * 4;
      
     // step through image data 64x64

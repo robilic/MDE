@@ -31,6 +31,9 @@ Texture *textures;
 Palette *palette;
 Sprite *sprites;
 
+unsigned char **sprite_images;
+int TARGET_SPRITE;
+
 SEG *segs;
 SSector *ssectors;
 Node *nodes;
@@ -166,17 +169,31 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
         }
         sprites_count = i - sprites_pointer;
     }
+    printf("Sprites pointer is %d, %d sprites found!\n", sprites_pointer, sprites_count);
     // read all the sprite headers
-    sprites = malloc(sizeof(Sprite) * sprites_count);
-    fseek(wadFile, directory[sprites_pointer].start, SEEK_SET);
-    fread(sprites, sizeof(Sprite), sprites_count, wadFile);
+    sprites = calloc(1, sizeof(Sprite) * sprites_count);
+    for (int i = 0; i < sprites_count; i++) {
+        fseek(wadFile, directory[sprites_pointer+i].start, SEEK_SET);
+        fread(&sprites[i], sizeof(Sprite), 1, wadFile);
+    }
     
-    printf("Sprite %.*s is %dx%d found at %d. left offset = %d, top_offset = %d\n", 8, directory[sprites_pointer].name, sprites[0].width, sprites[0].height, directory[sprites_pointer].start, sprites[0].left_offset, sprites[0].top_offset);
+    for (int i = 0; i < 100; i++) {
+        printf("Sprite %d has is %dx%d\n", i, sprites[i].width, sprites[i].height);
+    }
+    
+    TARGET_SPRITE = 91;
+    printf("Sprite %.*s is %dx%d found at %d. left offset = %d, top_offset = %d\n", 8, directory[sprites_pointer+TARGET_SPRITE].name, sprites[TARGET_SPRITE].width, sprites[TARGET_SPRITE].height, directory[sprites_pointer+TARGET_SPRITE].start, sprites[TARGET_SPRITE].left_offset, sprites[TARGET_SPRITE].top_offset);
 
-    unsigned char *sprite_image;
-    sprite_image = malloc(sizeof(unsigned char) * sprites[0].width * sprites[0].height);
+    unsigned char *rotated_sprite; // the original sprite, the way doom stores it
     
-    // 4 ints, w, h, left_offset, top_offset
+    // where we will store decoded image data for all the sprites
+    sprite_images = malloc(sizeof(unsigned char*) * sprites_count);
+    // allocate memory for this particular sprite
+    sprite_images[TARGET_SPRITE] = calloc(1, sizeof(unsigned char) * sprites[TARGET_SPRITE].width * sprites[TARGET_SPRITE].height);
+    rotated_sprite = calloc(1, sizeof(unsigned char) * sprites[TARGET_SPRITE].width * sprites[TARGET_SPRITE].height);
+    
+    // sprite data header
+    // 4 16-bit ints, w, h, left_offset, top_offset
     // width # of long pointers to rows of data
     // each row (bytes): row to start drawing
     //                   pixel count
@@ -186,19 +203,23 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     
     // go to the start of the sprite data
     // sprites_pointer is the first/starting sprite
-    fseek(wadFile, directory[sprites_pointer].start + 8, SEEK_SET);
+    fseek(wadFile, directory[sprites_pointer+TARGET_SPRITE].start + 8, SEEK_SET);
     int32_t image_offset; // where we are drawing in the current sprite
     unsigned char b1, b2;
     int column_pointers[320];
-    fread(&column_pointers, sizeof(int32_t), sprites[0].width, wadFile);
+    fread(&column_pointers, sizeof(int32_t), sprites[TARGET_SPRITE].width, wadFile);
     
-    int sprite_data_start = directory[sprites_pointer].start;
+    int sprite_data_start = directory[sprites_pointer+TARGET_SPRITE].start;
+    int line_start;
     printf("Sprite data starts at: %d %x\n", sprite_data_start, sprite_data_start);
     
-    for (int i = 0; i < sprites[0].width; i++) {
+    for (int i = 0; i < sprites[TARGET_SPRITE].width; i++) {
         //printf("Sprite column %d data lives at %d %x\n", i, column_pointers[i], column_pointers[i]);
+        // read the next column every iteration of the loop
         fseek(wadFile, sprite_data_start + column_pointers[i], SEEK_SET);
-        image_offset = sprites[0].height * i;
+        // start writing pixels at the beginning of the line
+        line_start = sprites[TARGET_SPRITE].height * i;
+        image_offset = line_start;
 
         while (TRUE) {
             fread(&b1, sizeof(unsigned char), 1, wadFile); // row to start drawing
@@ -206,19 +227,43 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
                 printf("Breaking on column %d\n", i);
                 break; // this whole line is blank/transparent
             } else {
-                // this is not right...
-                printf("Drawing column %d, starting at row %d\n", i, b1);
-                image_offset += b1;
+                image_offset = line_start + b1;
                 printf("image_offset = %d\n", image_offset);
                 fread(&b2, sizeof(unsigned char), 1, wadFile); // count of data bytes
                 fseek(wadFile, 1, SEEK_CUR); // skip first byte
-                printf("Copying %d bytes\n", b2);
-                fread(&sprite_image[image_offset], sizeof(unsigned char) * b2, 1, wadFile);
+                //fread(&sprite_images[0][image_offset], sizeof(unsigned char) * b2, 1, wadFile);
+                fread(&rotated_sprite[image_offset], sizeof(unsigned char) * b2, 1, wadFile);
                 image_offset += b2;
                 fseek(wadFile, 1, SEEK_CUR); // skip last byte
+                printf("Drawing column %d, starting at row %d\n", i, b1);
+                printf("Copying %d bytes\n", b2);
+                if (image_offset > sprites[TARGET_SPRITE].height * (i + 1)) {
+                    printf("Image offset is off the grid: offset %d, eol: %d\n", image_offset, sprites[TARGET_SPRITE].height * (i + 1));
+                }
+            }
+            if (image_offset > sprites[TARGET_SPRITE].width * sprites[TARGET_SPRITE].height) {
+                printf("Something went wrong, image data is larger than sprite dimensions\n");
+                exit(1);
             }
         }
     }
+    // dump sprite to text
+    //    for (int i = 0; i < sprites[0].height * sprites[0].width; i++) {
+    //        printf("%x", sprite_images[0][i]);
+    //    }
+
+    // flip the sprite, because doom stores them rotated 90 degrees to the left
+    for (int x = 0; x < sprites[TARGET_SPRITE].height; x++) {
+            for (int y = 0; y < sprites[TARGET_SPRITE].width; y++) {
+            sprite_images[TARGET_SPRITE][x + (y * sprites[TARGET_SPRITE].height)] =
+                          rotated_sprite[x + (y * sprites[TARGET_SPRITE].height)];
+        }
+    }
+    // don't forget to swap height/width on the sprite data structure
+    /*int swap = sprites[TARGET_SPRITE].height;
+    sprites[TARGET_SPRITE].height = sprites[TARGET_SPRITE].width;
+    sprites[TARGET_SPRITE].width = swap;
+    */
     printf("Closing .WAD file\n");
     fclose(wadFile);
     
