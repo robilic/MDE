@@ -10,18 +10,18 @@
 + Highlight for things
 + Load ceiling/floor textures
 + Load palettes
++ Hit detection for vertex
++ Highlight for vertex
 
-Load wall textures
 Load sprites
+Load wall textures
+Make functions for seeking/reading WAD files
 Hit detection for lines
 Highlight for lines
-Hit detection for vertex
-Highlight for vertex
 Be able to move a vertex
 Be able to move a thing
 
 Show x/y for mouse cursor
-Make functions for seeking/reading WAD files
 Thing detail window
 Vertex detail window
 Check if elements to draw are in the viewport or not

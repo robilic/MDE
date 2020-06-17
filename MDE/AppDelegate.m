@@ -73,7 +73,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
     
     // find the desired level and load the data for it
     for (int i = 0; i < header.dirsize; i++) {
-        if (!strncmp("E1M2", directory[i].name, 4)) {
+        if (!strncmp("E1M5", directory[i].name, 4)) {
             // printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
             // fread(void *restrict __ptr, size_t __size, size_t __nitems, FILE *restrict __stream)
             // printf("THINGS struct is %lu bytes each\n", sizeof(Thing));
@@ -95,7 +95,7 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count;
 
             fseek(wadFile, directory[i+4].start, SEEK_SET);
             vertexes = malloc(directory[i+4].size);
-            vertexes_count = directory[i+3].size / sizeof(Vertex);
+            vertexes_count = directory[i+4].size / sizeof(Vertex);
             fread(vertexes, sizeof(Vertex), directory[i+4].size / sizeof(Vertex), wadFile);
         }
         //printf("%.*s ", 8, directory[i].name);

@@ -15,6 +15,7 @@
 
 extern int linedefs_count;
 extern int things_count;
+extern int vertexes_count;
 
 extern Thing *things;
 extern Vertex *vertexes;
@@ -94,6 +95,16 @@ NSNotificationCenter *nc;
     }
     
     // draw VERTEXES
+    NSRect v;
+    NSBezierPath *vPath;
+
+    for (i = 0; i < vertexes_count; i++) {
+        [[NSColor grayColor] set];
+        v = NSMakeRect(((vertexes[i].x-viewportX)/z)-1, ((vertexes[i].y-viewportY)/z)-1, 2, 2);
+        vPath = [NSBezierPath bezierPath];
+        [vPath appendBezierPathWithOvalInRect: v];
+        [vPath stroke];
+    }
     // NOT IMPLEMENTED
     
     // draw THINGS
@@ -111,11 +122,22 @@ NSNotificationCenter *nc;
     // draw highlighted entity
     // if MODE == "foo" ...
     if (selectedObject > -1) {
-        [[NSColor cyanColor] set];
-        t = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-5, ((things[selectedObject].ypos-viewportY)/z)-5, 10, 10);
-        path = [NSBezierPath bezierPath];
-        [path appendBezierPathWithOvalInRect: t];
-        [path stroke];
+        switch (editMode) {
+            case EDIT_MODE_THINGS:
+                [[NSColor cyanColor] set];
+                t = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-5, ((things[selectedObject].ypos-viewportY)/z)-5, 10, 10);
+                path = [NSBezierPath bezierPath];
+                [path appendBezierPathWithOvalInRect: t];
+                [path stroke];
+                break;
+            case EDIT_MODE_VERTEXES:
+                [[NSColor cyanColor] set];
+                t = NSMakeRect(((vertexes[selectedObject].x-viewportX)/z)-3, ((vertexes[selectedObject].y-viewportY)/z)-3, 6, 6);
+                path = [NSBezierPath bezierPath];
+                [path appendBezierPathWithOvalInRect: t];
+                [path stroke];
+                break;
+        }
     }
 }
 
@@ -153,17 +175,16 @@ NSNotificationCenter *nc;
     int cursorLevelPosX = viewportX + (curXpos * z);
     int cursorLevelPosY = viewportY + (curYpos * z);
     
-    int i;
-    
-    int hit_radius = 5 * z;
+    int thing_hit_radius = 5 * z;
+    int vertex_hit_radius = 3 * z;
     switch (editMode) {
         case EDIT_MODE_PAN:
 //            printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
             break;
         case EDIT_MODE_THINGS:
-            for (i = 0; i < things_count; i++) {
-                if ((cursorLevelPosX > things[i].xpos - hit_radius) && (cursorLevelPosX < things[i].xpos + hit_radius)) {
-                    if ((cursorLevelPosY > things[i].ypos - hit_radius) && (cursorLevelPosY < things[i].ypos + hit_radius)) {
+            for (int i = 0; i < things_count; i++) {
+                if ((cursorLevelPosX > things[i].xpos - thing_hit_radius) && (cursorLevelPosX < things[i].xpos + thing_hit_radius)) {
+                    if ((cursorLevelPosY > things[i].ypos - thing_hit_radius) && (cursorLevelPosY < things[i].ypos + thing_hit_radius)) {
                         printf("Mouse hit on thing %d, type = %x (%d), attributes = %x\n", i, things[i].type, things[i].type, things[i].when);
 /*
                         printf("THING is at coords %d, %d\n", things[i].xpos, things[i].ypos);
@@ -174,7 +195,17 @@ NSNotificationCenter *nc;
                         selectedObject = i;
                         [self setNeedsDisplay:YES];                    }
                 }
+                // does this line do...anything?
                 NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((-things[i].ypos-viewportY)/z)-3, 6, 6);
+            }
+        case EDIT_MODE_VERTEXES:
+            for (int i = 0; i < vertexes_count; i++) {
+                if ((cursorLevelPosX > vertexes[i].x - vertex_hit_radius) && (cursorLevelPosX < vertexes[i].x + vertex_hit_radius)) {
+                    if ((cursorLevelPosY > vertexes[i].y - vertex_hit_radius) && (cursorLevelPosY < vertexes[i].y + vertex_hit_radius)) {
+                        printf("Mouse hit on thing %d, x:%d, y:%d\n", i, vertexes[i].x, vertexes[i].y);
+                        selectedObject = i;
+                        [self setNeedsDisplay:YES];                    }
+                }
             }
 
             break;
