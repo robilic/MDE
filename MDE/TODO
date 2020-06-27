@@ -12,8 +12,12 @@
 + Load palettes
 + Hit detection for vertex
 + Highlight for vertex
++ Load sprites
 
-Load sprites
+Where I left off last:
+
+     Load ALL the sprites not just he one selected one. Crashes when accessing 'sprite_images'
+     
 Load wall textures
 Make functions for seeking/reading WAD files
 Hit detection for lines
@@ -30,8 +34,6 @@ Draw vertexes
 Draw grid
 Implement the viewport thumbnail
 Limit maps to +/- 10,000 instead of 32768?
-
-
 
 Hotkeys:
  Zoom

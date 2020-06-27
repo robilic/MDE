@@ -137,6 +137,8 @@ NSNotificationCenter *nc;
                 [path appendBezierPathWithOvalInRect: t];
                 [path stroke];
                 break;
+            default:
+                break;
         }
     }
 }
@@ -177,6 +179,8 @@ NSNotificationCenter *nc;
     
     int thing_hit_radius = 5 * z;
     int vertex_hit_radius = 3 * z;
+    selectedObject = -1;
+    
     switch (editMode) {
         case EDIT_MODE_PAN:
 //            printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
@@ -198,6 +202,7 @@ NSNotificationCenter *nc;
                 // does this line do...anything?
                 NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((-things[i].ypos-viewportY)/z)-3, 6, 6);
             }
+            break;
         case EDIT_MODE_VERTEXES:
             for (int i = 0; i < vertexes_count; i++) {
                 if ((cursorLevelPosX > vertexes[i].x - vertex_hit_radius) && (cursorLevelPosX < vertexes[i].x + vertex_hit_radius)) {
@@ -207,7 +212,6 @@ NSNotificationCenter *nc;
                         [self setNeedsDisplay:YES];                    }
                 }
             }
-
             break;
         default:
             break;

@@ -8,6 +8,8 @@
 
 #import "AppController.h"
 
+#include <stdlib.h>
+
 #include "wadfile.h"
 
 extern Texture *textures;
@@ -15,6 +17,7 @@ extern Palette *palette;
 extern Sprite *sprites;
 extern unsigned char **sprite_images;
 extern int TARGET_SPRITE;
+extern int sprites_count;
 
 @implementation AppController
 
@@ -43,16 +46,22 @@ extern int TARGET_SPRITE;
 - (void)panClicked:(id)sender {
     printf("Bark!\n");
 
+    int SPR;
+    // SPR = TARGET_SPRITE;
+    int nMin = 1;
+    int nMax = sprites_count;
+    SPR = rand() % (nMax - nMin) + nMin;
+    
     NSImage *image;
     int width, height;
-    width = sprites[TARGET_SPRITE].height;
-    height = sprites[TARGET_SPRITE].width;
+    width = sprites[SPR].height;
+    height = sprites[SPR].width;
     
     int pixel_count = width * height; // source is indexed 8-bit color
     int bpp = 4;
     size_t bufferLength = pixel_count * bpp;
     
-    printf("panClicked - sprite %d, width %d, height %d, pixel_count %d\n", TARGET_SPRITE, width, height, pixel_count);
+    printf("panClicked - sprite %d, width %d, height %d, pixel_count %d\n", SPR, width, height, pixel_count);
      
     // step through image data 64x64
     // create 4 bpp version using palette
@@ -62,9 +71,9 @@ extern int TARGET_SPRITE;
     int idx;
     for (int i = 0; i < pixel_count; i++) {
         idx = i * 4;
-        data[idx + 0] = palette[sprite_images[TARGET_SPRITE][i]].r;
-        data[idx + 1] = palette[sprite_images[TARGET_SPRITE][i]].g;
-        data[idx + 2] = palette[sprite_images[TARGET_SPRITE][i]].b;
+        data[idx + 0] = palette[sprite_images[SPR][i]].r;
+        data[idx + 1] = palette[sprite_images[SPR][i]].g;
+        data[idx + 2] = palette[sprite_images[SPR][i]].b;
         data[idx + 3] = 255; // alpha
     }
      
@@ -136,7 +145,8 @@ extern int TARGET_SPRITE;
 
     image = [[NSImage alloc] initWithCGImage:iref size:NSMakeSize(width, height)];
     [textureView setImage:image];
-    free(data);    
+    [[textureView layer] setMagnificationFilter:kCAFilterNearest];
+    free(data);
 }
 
 - (void)handleMapViewChange:(NSNotification *)note
