@@ -221,7 +221,7 @@ int foobar(void) {
             int sprite_data_start = directory[sprites_pointer+TARGET_SPRITE].start;
             int line_start;
             fread(&column_pointers, sizeof(int32_t), sprites[TARGET_SPRITE].width, wadFile);
-            printf("Sprite data starts at: %d %x\n", sprite_data_start, sprite_data_start);
+            //printf("Sprite data starts at: %d %x\n", sprite_data_start, sprite_data_start);
             
             for (int i = 0; i < sprites[TARGET_SPRITE].width; i++) {
                 //printf("Sprite column %d data lives at %d %x\n", i, column_pointers[i], column_pointers[i]);

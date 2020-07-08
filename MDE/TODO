@@ -16,7 +16,8 @@
 
 Where I left off last:
 
-     Load ALL the sprites not just he one selected one. Crashes when accessing 'sprite_images'
+     Selecting object to drag
+     SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
      
 Load wall textures
 Make functions for seeking/reading WAD files

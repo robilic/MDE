@@ -44,6 +44,7 @@ extern int sprites_count;
 }
 
 - (void)panClicked:(id)sender {
+    // this code shows a sprite
     printf("Bark!\n");
 
     int SPR;
@@ -102,6 +103,7 @@ extern int sprites_count;
 }
 
 - (void)fooClicked:(id)sender {
+    // this code actually shows wall texture
     printf("Bark!\n");
     
     NSImage *image;

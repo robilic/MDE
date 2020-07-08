@@ -29,12 +29,12 @@ NSNotificationCenter *nc;
 
 @implementation MapView {
     // float zoomFactor;
-    int editMode;
-    NSPoint lastMouse;
+    int editMode;       // type of entities we are editing
+    NSPoint lastMouse;  // last recorded position of mouse
     int16_t viewportX, viewportY; // upper left location of the viewport
-    float z;
-    float c;
-    int selectedObject;   // thing we have selected
+    float z;            // this is the zoom/scale setting...needs a new name
+    float c;            // generic color variable until we find out 'smarter' colors
+    int selectedObject; // object which is currently selected
 }
 
 - (void) awakeFromNib {
@@ -77,7 +77,6 @@ NSNotificationCenter *nc;
 
 - (void) drawRect:(NSRect)dirtyRect
 {
-    int i;
     NSPoint start, end;
     [super drawRect:dirtyRect];
 
@@ -85,7 +84,7 @@ NSNotificationCenter *nc;
     [[NSColor blackColor] setFill];
     NSRectFill(dirtyRect);
     // draw SIDEDEFS
-    for (i = 0; i < linedefs_count; i++) {
+    for (int i = 0; i < linedefs_count; i++) {
         start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (vertexes[linedefs[i].start].y-viewportY) / z);
         end   = NSMakePoint((vertexes[linedefs[i].end].x-viewportX) / z, (vertexes[linedefs[i].end].y-viewportY) / z);
         c = 50 + (sidedefs[linedefs[i].sidedef1].sector * 2);
@@ -98,7 +97,7 @@ NSNotificationCenter *nc;
     NSRect v;
     NSBezierPath *vPath;
 
-    for (i = 0; i < vertexes_count; i++) {
+    for (int i = 0; i < vertexes_count; i++) {
         [[NSColor grayColor] set];
         v = NSMakeRect(((vertexes[i].x-viewportX)/z)-1, ((vertexes[i].y-viewportY)/z)-1, 2, 2);
         vPath = [NSBezierPath bezierPath];
@@ -108,14 +107,14 @@ NSNotificationCenter *nc;
     // NOT IMPLEMENTED
     
     // draw THINGS
-    NSRect t;
+    NSRect highlight;
     NSBezierPath *path;
 
-    for (i = 0; i < things_count; i++) {
+    for (int i = 0; i < things_count; i++) {
         [[NSColor yellowColor] set];
-        t = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((things[i].ypos-viewportY)/z)-3, 6, 6);
+        highlight = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((things[i].ypos-viewportY)/z)-3, 6, 6);
         path = [NSBezierPath bezierPath];
-        [path appendBezierPathWithOvalInRect: t];
+        [path appendBezierPathWithOvalInRect: highlight];
         [path stroke];
     }
     
@@ -125,16 +124,16 @@ NSNotificationCenter *nc;
         switch (editMode) {
             case EDIT_MODE_THINGS:
                 [[NSColor cyanColor] set];
-                t = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-5, ((things[selectedObject].ypos-viewportY)/z)-5, 10, 10);
+                highlight = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-5, ((things[selectedObject].ypos-viewportY)/z)-5, 10, 10);
                 path = [NSBezierPath bezierPath];
-                [path appendBezierPathWithOvalInRect: t];
+                [path appendBezierPathWithOvalInRect: highlight];
                 [path stroke];
                 break;
             case EDIT_MODE_VERTEXES:
                 [[NSColor cyanColor] set];
-                t = NSMakeRect(((vertexes[selectedObject].x-viewportX)/z)-3, ((vertexes[selectedObject].y-viewportY)/z)-3, 6, 6);
+                highlight = NSMakeRect(((vertexes[selectedObject].x-viewportX)/z)-3, ((vertexes[selectedObject].y-viewportY)/z)-3, 6, 6);
                 path = [NSBezierPath bezierPath];
-                [path appendBezierPathWithOvalInRect: t];
+                [path appendBezierPathWithOvalInRect: highlight];
                 [path stroke];
                 break;
             default:
@@ -242,6 +241,7 @@ NSNotificationCenter *nc;
 
     switch (editMode) {
         case EDIT_MODE_PAN:
+        {
             // ghetto scrolling
             viewportX = ceil(viewportX + (z*(lastMouse.x-pointInView.x)));
             viewportY = ceil(viewportY + (z*(lastMouse.y-pointInView.y)));
@@ -257,6 +257,31 @@ NSNotificationCenter *nc;
             
             //NSLog(@"Sending notification: %@", MDEMapViewChangedNotification);
             break;
+        }
+        case EDIT_MODE_THINGS:
+        {
+            if (selectedObject > -1) {
+                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObject, things[selectedObject].xpos, things[selectedObject].ypos, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
+                things[selectedObject].xpos = viewportX + (int)(z*pointInView.x);
+                things[selectedObject].ypos = viewportY + (int)(z*pointInView.y);
+                
+            }
+            break;
+        }
+        case EDIT_MODE_VERTEXES:
+        {
+            if (selectedObject > -1) {
+                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObject, vertexes[selectedObject].x, vertexes[selectedObject].y, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
+                vertexes[selectedObject].x = viewportX + (int)(z*pointInView.x);
+                vertexes[selectedObject].y = viewportY + (int)(z*pointInView.y);
+                
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
     }
     [self setNeedsDisplay:YES];
     [self superview];
