@@ -24,17 +24,18 @@ extern SideDef *sidedefs;
 
 float c;
 
-NSString *const MDEMapViewChangedNotification = @"MDEMapViewChanged";;
+NSString *const MDEMapViewChangedNotification = @"MDEMapViewChanged";
+NSString *const MDEPropertiesPanelUpdatedNotification = @"MDEPropertiesPanelUpdated";
 NSNotificationCenter *nc;
 
 @implementation MapView {
     // float zoomFactor;
-    int editMode;       // type of entities we are editing
-    NSPoint lastMouse;  // last recorded position of mouse
+    int editMode;           // type of entities we are editing
+    NSPoint lastMouse;      // last recorded position of mouse
     int16_t viewportX, viewportY; // upper left location of the viewport
-    float z;            // this is the zoom/scale setting...needs a new name
-    float c;            // generic color variable until we find out 'smarter' colors
-    int selectedObject; // object which is currently selected
+    float z;                // this is the zoom/scale setting...needs a new name
+    float c;                // generic color variable until we find out 'smarter' colors
+    int selectedObjectID;   // object which is currently selected
 }
 
 - (void) awakeFromNib {
@@ -43,7 +44,7 @@ NSNotificationCenter *nc;
     viewportX = viewportY = -1000;
     editMode = EDIT_MODE_PAN;
     nc = [NSNotificationCenter defaultCenter];
-    selectedObject = -1;
+    selectedObjectID = -1;
 }
 
 - (void) viewDidMoveToWindow
@@ -120,24 +121,54 @@ NSNotificationCenter *nc;
     
     // draw highlighted entity
     // if MODE == "foo" ...
-    if (selectedObject > -1) {
+    if (selectedObjectID > -1) {
         switch (editMode) {
             case EDIT_MODE_THINGS:
                 [[NSColor cyanColor] set];
-                highlight = NSMakeRect(((things[selectedObject].xpos-viewportX)/z)-5, ((things[selectedObject].ypos-viewportY)/z)-5, 10, 10);
+                highlight = NSMakeRect(((things[selectedObjectID].xpos-viewportX)/z)-5, ((things[selectedObjectID].ypos-viewportY)/z)-5, 10, 10);
                 path = [NSBezierPath bezierPath];
                 [path appendBezierPathWithOvalInRect: highlight];
                 [path stroke];
                 break;
             case EDIT_MODE_VERTEXES:
                 [[NSColor cyanColor] set];
-                highlight = NSMakeRect(((vertexes[selectedObject].x-viewportX)/z)-3, ((vertexes[selectedObject].y-viewportY)/z)-3, 6, 6);
+                highlight = NSMakeRect(((vertexes[selectedObjectID].x-viewportX)/z)-3, ((vertexes[selectedObjectID].y-viewportY)/z)-3, 6, 6);
                 path = [NSBezierPath bezierPath];
                 [path appendBezierPathWithOvalInRect: highlight];
                 [path stroke];
                 break;
             default:
                 break;
+        }
+    }
+}
+
+- (void) updatePropertiesPanel
+{
+    printf("Updating properties panel\n");
+    
+    switch (editMode) {
+        case EDIT_MODE_PAN:
+            break;
+        case EDIT_MODE_THINGS: {
+            break;
+        }
+        case EDIT_MODE_VERTEXES: {
+            NSNumber *vx = [NSNumber numberWithInt:vertexes[selectedObjectID].x];
+            NSNumber *vy = [NSNumber numberWithInt:vertexes[selectedObjectID].y];
+            NSNumber *vid = [NSNumber numberWithInt:selectedObjectID];
+            NSDictionary *d = [NSDictionary dictionaryWithObjectsAndKeys:vx, @"vx", vy, @"vy", vid, @"vid", nil];
+            [nc postNotificationName:MDEPropertiesPanelUpdatedNotification
+                              object:self
+                            userInfo:d];
+            
+            break;
+        }
+        case EDIT_MODE_LINEDEFS: {
+            break;
+        }
+        default: {
+            break;
         }
     }
 }
@@ -178,7 +209,7 @@ NSNotificationCenter *nc;
     
     int thing_hit_radius = 5 * z;
     int vertex_hit_radius = 3 * z;
-    selectedObject = -1;
+    selectedObjectID = -1;
     
     switch (editMode) {
         case EDIT_MODE_PAN:
@@ -195,7 +226,7 @@ NSNotificationCenter *nc;
                         printf("Mouse is at LEVEL coords %d, %d\n", cursorLevelPosX, cursorLevelPosY);
 */
                         // move this code to selectObject function?
-                        selectedObject = i;
+                        selectedObjectID = i;
                         [self setNeedsDisplay:YES];                    }
                 }
                 // does this line do...anything?
@@ -207,7 +238,8 @@ NSNotificationCenter *nc;
                 if ((cursorLevelPosX > vertexes[i].x - vertex_hit_radius) && (cursorLevelPosX < vertexes[i].x + vertex_hit_radius)) {
                     if ((cursorLevelPosY > vertexes[i].y - vertex_hit_radius) && (cursorLevelPosY < vertexes[i].y + vertex_hit_radius)) {
                         printf("Mouse hit on thing %d, x:%d, y:%d\n", i, vertexes[i].x, vertexes[i].y);
-                        selectedObject = i;
+                        selectedObjectID = i;
+                        [self updatePropertiesPanel];
                         [self setNeedsDisplay:YES];                    }
                 }
             }
@@ -219,8 +251,7 @@ NSNotificationCenter *nc;
 
 - (void) mouseDown:(NSEvent *)theEvent
 {
-    NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-
+    //NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
     switch (editMode) {
         case EDIT_MODE_PAN:
             //NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
@@ -260,20 +291,20 @@ NSNotificationCenter *nc;
         }
         case EDIT_MODE_THINGS:
         {
-            if (selectedObject > -1) {
-                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObject, things[selectedObject].xpos, things[selectedObject].ypos, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
-                things[selectedObject].xpos = viewportX + (int)(z*pointInView.x);
-                things[selectedObject].ypos = viewportY + (int)(z*pointInView.y);
+            if (selectedObjectID > -1) {
+                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObjectID, things[selectedObjectID].xpos, things[selectedObjectID].ypos, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
+                things[selectedObjectID].xpos = viewportX + (int)(z*pointInView.x);
+                things[selectedObjectID].ypos = viewportY + (int)(z*pointInView.y);
                 
             }
             break;
         }
         case EDIT_MODE_VERTEXES:
         {
-            if (selectedObject > -1) {
-                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObject, vertexes[selectedObject].x, vertexes[selectedObject].y, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
-                vertexes[selectedObject].x = viewportX + (int)(z*pointInView.x);
-                vertexes[selectedObject].y = viewportY + (int)(z*pointInView.y);
+            if (selectedObjectID > -1) {
+                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObjectID, vertexes[selectedObjectID].x, vertexes[selectedObjectID].y, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
+                vertexes[selectedObjectID].x = viewportX + (int)(z*pointInView.x);
+                vertexes[selectedObjectID].y = viewportY + (int)(z*pointInView.y);
                 
             }
             break;

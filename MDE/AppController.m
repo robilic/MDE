@@ -29,6 +29,11 @@ extern int sprites_count;
                selector:@selector(handleMapViewChange:)
                    name:MDEMapViewChangedNotification
                  object:nil];
+
+        [nc addObserver:self
+               selector:@selector(handlePropertiesPanelChange:)
+                   name:MDEPropertiesPanelUpdatedNotification
+                 object:nil];
         NSLog(@"Registered with notification center");
     }
     return self;
@@ -156,7 +161,13 @@ extern int sprites_count;
     // update x/y values
     [viewPositionX setStringValue:[[note userInfo] objectForKey:@"vx"]];
     [viewPositionY setStringValue:[[note userInfo] objectForKey:@"vy"]];
-    
+}
+
+- (void)handlePropertiesPanelChange:(NSNotification *)note
+{
+    [vertexPositionX setStringValue:[[note userInfo] objectForKey:@"vx"]];
+    [vertexPositionY setStringValue:[[note userInfo] objectForKey:@"vy"]];
+    [vertexObjectID setStringValue:[[note userInfo] objectForKey:@"vid"]];
 }
 
 - (IBAction)modeChanged:(id)sender {
@@ -166,13 +177,17 @@ extern int sprites_count;
         [mv setEditMode:EDIT_MODE_PAN];
     } else if ([modeSetting isEqualToString:@"Things"]) {
         [mv setEditMode:EDIT_MODE_THINGS];
+        [propertiesPanel selectTabViewItemWithIdentifier:@"Things"];
     } else if ([modeSetting isEqualToString:@"Vertexes"]) {
         [mv setEditMode:EDIT_MODE_VERTEXES];
+        [propertiesPanel selectTabViewItemWithIdentifier:@"Vertexes"];
     } else if ([modeSetting isEqualToString:@"LineDefs"]) {
         [mv setEditMode:EDIT_MODE_LINEDEFS];
+        [propertiesPanel selectTabViewItemWithIdentifier:@"Lines"];
     } else if ([modeSetting isEqualToString:@"SideDefs"]) {
         [mv setEditMode:EDIT_MODE_SIDEDEFS];
     } else if ([modeSetting isEqualToString:@"Sectors"]) {
+        [propertiesPanel selectTabViewItemWithIdentifier:@"Sectors"];
         [mv setEditMode:EDIT_MODE_SECTORS];
     }
 }

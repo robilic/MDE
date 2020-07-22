@@ -21,7 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
     __weak IBOutlet NSPopUpButtonCell *modeSelect;
     IBOutlet NSTextField *viewPositionX;
     IBOutlet NSTextField *viewPositionY;
+    IBOutlet NSTabView *propertiesPanel;
     IBOutlet NSImageView *textureView;
+    // Properties Panels
+    IBOutlet NSTextField *vertexObjectID;
+    IBOutlet NSTextField *vertexPositionX;
+    IBOutlet NSTextField *vertexPositionY;
+
 }
 
 - (IBAction)zoomChanged:(id)sender;

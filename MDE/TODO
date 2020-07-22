@@ -13,34 +13,42 @@
 + Hit detection for vertex
 + Highlight for vertex
 + Load sprites
++ Draw vertexes
++ Be able to move a vertex
++ Be able to move a thing
 
 Where I left off last:
+    Linked vertexes to property panels, works on highlight. Should update on move.
 
-     Selecting object to drag
-     SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
-     
-Load wall textures
-Make functions for seeking/reading WAD files
-Hit detection for lines
-Highlight for lines
-Be able to move a vertex
-Be able to move a thing
+Refactoring:
+    SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
+    Move statement 'selectedObject = x' to 'selectObject(x)' function
+    Change thing[id].value = foo to changeThing(id, value)
+    
+Next up:
 
-Show x/y for mouse cursor
-Thing detail window
-Vertex detail window
-Check if elements to draw are in the viewport or not
-Implement buckets for verts etc
-Draw vertexes
-Draw grid
-Implement the viewport thumbnail
-Limit maps to +/- 10,000 instead of 32768?
+ Functions for window coords -> map coords
+ Thing detail window
+ Vertex detail window
+
+ Load wall textures (encoded like sprites)
+ Make functions for seeking/reading WAD files
+ Hit detection for lines
+ Highlight for lines
+
+ Merge LineDef/SideDef editing
+ Check if elements to draw are in the viewport or not
+ Implement buckets for verts etc
+ Draw grid
+ Show x/y for mouse cursor
+ Implement the viewport thumbnail
+ Limit scrolling to 65,536 x 65,536
+ Limit maps to +/- 10,000 instead of 32768?
+ Pinch to zoom?
 
 Hotkeys:
  Zoom
  Scroll
  ?
 
-Pinch to zoom?
-Limit scrolling to 65,536 x 65,536
 

@@ -27,5 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 extern NSString *const MDEMapViewChangedNotification;
+extern NSString *const MDEPropertiesPanelUpdatedNotification;
 
 NS_ASSUME_NONNULL_END
