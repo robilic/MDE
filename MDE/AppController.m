@@ -165,9 +165,39 @@ extern int sprites_count;
 
 - (void)handlePropertiesPanelChange:(NSNotification *)note
 {
-    [vertexPositionX setStringValue:[[note userInfo] objectForKey:@"vx"]];
-    [vertexPositionY setStringValue:[[note userInfo] objectForKey:@"vy"]];
-    [vertexObjectID setStringValue:[[note userInfo] objectForKey:@"vid"]];
+    switch (mv.editMode) {
+        case EDIT_MODE_PAN:
+            break;
+        case EDIT_MODE_THINGS: {
+            [thingX setStringValue:[[note userInfo] objectForKey:@"tx"]];
+            [thingY setStringValue:[[note userInfo] objectForKey:@"ty"]];
+            [thingType setStringValue:[[note userInfo] objectForKey:@"ttype"]];
+            [thingAngle setStringValue:[[note userInfo] objectForKey:@"tangle"]];
+            [thingAppears setStringValue:[[note userInfo] objectForKey:@"twhen"]];
+            [thingObjectID setStringValue:[[note userInfo] objectForKey:@"tid"]];
+            break;
+        }
+        case EDIT_MODE_VERTEXES: {
+            [vertexPositionX setStringValue:[[note userInfo] objectForKey:@"vx"]];
+            [vertexPositionY setStringValue:[[note userInfo] objectForKey:@"vy"]];
+            [vertexObjectID setStringValue:[[note userInfo] objectForKey:@"vid"]];
+            break;
+        }
+        case EDIT_MODE_LINEDEFS: {
+            [lineID setStringValue:[[note userInfo] objectForKey:@"lid"]];
+            [lineVertexes setStringValue:[[note userInfo] objectForKey:@"lvertexes"]];
+            [lineFlags setStringValue:[[note userInfo] objectForKey:@"lflags"]];
+            [lineType setStringValue:[[note userInfo] objectForKey:@"ltype"]];
+            [lineSectorTag setStringValue:[[note userInfo] objectForKey:@"lsectortag"]];
+            [lineSide1ID setStringValue:[[note userInfo] objectForKey:@"lsidedef1"]];
+            [lineSide2ID setStringValue:[[note userInfo] objectForKey:@"lsidedef2"]];
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
 }
 
 - (IBAction)modeChanged:(id)sender {
@@ -176,20 +206,19 @@ extern int sprites_count;
     if ([modeSetting isEqualToString:@"Pan"]) {
         [mv setEditMode:EDIT_MODE_PAN];
     } else if ([modeSetting isEqualToString:@"Things"]) {
-        [mv setEditMode:EDIT_MODE_THINGS];
+        mv.editMode = EDIT_MODE_THINGS;
         [propertiesPanel selectTabViewItemWithIdentifier:@"Things"];
     } else if ([modeSetting isEqualToString:@"Vertexes"]) {
-        [mv setEditMode:EDIT_MODE_VERTEXES];
+        mv.editMode = EDIT_MODE_VERTEXES;
         [propertiesPanel selectTabViewItemWithIdentifier:@"Vertexes"];
     } else if ([modeSetting isEqualToString:@"LineDefs"]) {
-        [mv setEditMode:EDIT_MODE_LINEDEFS];
+        mv.editMode = EDIT_MODE_LINEDEFS;
         [propertiesPanel selectTabViewItemWithIdentifier:@"Lines"];
-    } else if ([modeSetting isEqualToString:@"SideDefs"]) {
-        [mv setEditMode:EDIT_MODE_SIDEDEFS];
-    } else if ([modeSetting isEqualToString:@"Sectors"]) {
+     } else if ([modeSetting isEqualToString:@"Sectors"]) {
         [propertiesPanel selectTabViewItemWithIdentifier:@"Sectors"];
-        [mv setEditMode:EDIT_MODE_SECTORS];
+        mv.editMode = EDIT_MODE_SECTORS;
     }
+    NSLog(@"val: %d", mv.editMode);
 }
 
 - (IBAction)zoomChanged:(id)sender {

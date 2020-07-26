@@ -19,10 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MapView : NSView
 
+@property int editMode;
+
 - (BOOL) isFlipped;
 - (void) durf;
 - (void) setZoomFactor:(NSNumber *) zoomFactor;
-- (void) setEditMode:(int) m;
 
 @end
 

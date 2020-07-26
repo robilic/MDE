@@ -16,10 +16,17 @@
 + Draw vertexes
 + Be able to move a vertex
 + Be able to move a thing
++ Setter/Getter for mapview (mv) editMode
++ Vertex properties panel works
++ Things properties panel works
++ Vertex/Thing panels update on drag
 
 Where I left off last:
-    Linked vertexes to property panels, works on highlight. Should update on move.
-
+    Finish wiring up sides/lines properties panels
+    Line length calculation
+    Line hit detection
+    Bring over things.h/things.c from DEU for type lookups and names of things
+    
 Refactoring:
     SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
     Move statement 'selectedObject = x' to 'selectObject(x)' function
