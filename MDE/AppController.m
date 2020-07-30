@@ -197,7 +197,6 @@ extern int sprites_count;
             break;
         }
     }
-
 }
 
 - (IBAction)modeChanged:(id)sender {

@@ -11,7 +11,7 @@
 #include <math.h>
 
 #include "wadfile.h"
-
+#include "deu_things.h"
 
 extern int linedefs_count;
 extern int things_count;
@@ -78,7 +78,7 @@ NSNotificationCenter *nc;
     // Draw background
     [[NSColor blackColor] setFill];
     NSRectFill(dirtyRect);
-    // draw SIDEDEFS
+    // draw LINEDEFS
     for (int i = 0; i < linedefs_count; i++) {
         start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (vertexes[linedefs[i].start].y-viewportY) / z);
         end   = NSMakePoint((vertexes[linedefs[i].end].x-viewportX) / z, (vertexes[linedefs[i].end].y-viewportY) / z);
@@ -131,6 +131,11 @@ NSNotificationCenter *nc;
                 [path appendBezierPathWithOvalInRect: highlight];
                 [path stroke];
                 break;
+            case EDIT_MODE_LINEDEFS:
+                start = NSMakePoint((vertexes[linedefs[selectedObjectID].start].x-viewportX) / z, (vertexes[linedefs[selectedObjectID].start].y-viewportY) / z);
+                end   = NSMakePoint((vertexes[linedefs[selectedObjectID].end].x-viewportX) / z, (vertexes[linedefs[selectedObjectID].end].y-viewportY) / z);
+                [[NSColor colorWithDeviceRed:0 green:255 blue:255 alpha:1.0] set];
+                [NSBezierPath strokeLineFromPoint:start toPoint:end];
             default:
                 break;
         }
@@ -139,17 +144,15 @@ NSNotificationCenter *nc;
 
 - (void) updatePropertiesPanel
 {
-    printf("Updating properties panel\n");
-    
     switch (_editMode) {
         case EDIT_MODE_PAN:
             break;
         case EDIT_MODE_THINGS: {
             NSNumber *tx = [NSNumber numberWithInt:things[selectedObjectID].xpos];
             NSNumber *ty = [NSNumber numberWithInt:things[selectedObjectID].ypos];
-            NSNumber *tangle = [NSNumber numberWithInt:things[selectedObjectID].angle];
-            NSNumber *ttype = [NSNumber numberWithInt:things[selectedObjectID].type];
-            NSNumber *twhen= [NSNumber numberWithInt:things[selectedObjectID].when];
+            NSString *tangle = [NSString stringWithUTF8String:deu_GetAngleName(things[selectedObjectID].angle)];
+            NSString *ttype = [NSString stringWithUTF8String:deu_GetThingName(things[selectedObjectID].type)];
+            NSString *twhen = [NSString stringWithUTF8String:deu_GetWhenName(things[selectedObjectID].when)];
             NSNumber *tid = [NSNumber numberWithInt:selectedObjectID];
 
             NSDictionary *d = [NSDictionary dictionaryWithObjectsAndKeys:tx, @"tx", ty, @"ty", tangle, @"tangle", ttype, @"ttype", twhen, @"twhen", tid, @"tid", nil];
@@ -257,14 +260,10 @@ NSNotificationCenter *nc;
             }
             break;
         case EDIT_MODE_LINEDEFS:
-            selectedObjectID = 50;
-            [self updatePropertiesPanel];
-            [self setNeedsDisplay:YES];
-
             for (int i = 0; i < linedefs_count; i++) {
-                if (selectedObjectID == 666) {
+                if (hitDetectLine(i, cursorLevelPosX, cursorLevelPosY) > -1) {
                         selectedObjectID = i;
-                        [self updatePropertiesPanel];
+                        //[self updatePropertiesPanel];
                         [self setNeedsDisplay:YES];
                 }
             }
@@ -343,6 +342,25 @@ NSNotificationCenter *nc;
     }
     [self setNeedsDisplay:YES];
     [self superview];
+}
+
+#pragma Utilities
+
+int hitDetectLine(int line, int testx, int testy)
+{
+    int dotProduct;
+    
+    dotProduct = abs(((vertexes[linedefs[line].end].x - vertexes[linedefs[line].start].x) * (testy - vertexes[linedefs[line].start].y))
+                     - ((vertexes[linedefs[line].end].y - vertexes[linedefs[line].start].y) * (testx - vertexes[linedefs[line].start].x)));
+    if (dotProduct < 100) {
+        printf("## Possibly got it! ##");
+        printf("Dot Product of line %d: %d\n", line, dotProduct);
+        printf("Cursor: %d, %d\n", testx, testy);
+        printf("Line from %d, %d to %d, %d\n", vertexes[linedefs[line].start].y, vertexes[linedefs[line].start].y, vertexes[linedefs[line].end].x, vertexes[linedefs[line].end].y);
+        return line;
+    }
+    
+    return -1;
 }
 
 @end
