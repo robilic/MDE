@@ -9,6 +9,7 @@
 #import "MapView.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "wadfile.h"
 #include "deu_things.h"
@@ -229,8 +230,7 @@ NSNotificationCenter *nc;
     
     int thing_hit_radius = 5 * z;
     int vertex_hit_radius = 3 * z;
-    selectedObjectID = -1;
-    
+
     switch (_editMode) {
         case EDIT_MODE_PAN:
 //            printf("Mouse is at coords %d, %d\n", curXpos, curYpos);
@@ -259,14 +259,16 @@ NSNotificationCenter *nc;
                 }
             }
             break;
-        case EDIT_MODE_LINEDEFS:
+        case EDIT_MODE_LINEDEFS: {
             for (int i = 0; i < linedefs_count; i++) {
-                if (hitDetectLine(i, cursorLevelPosX, cursorLevelPosY) > -1) {
-                        selectedObjectID = i;
-                        //[self updatePropertiesPanel];
-                        [self setNeedsDisplay:YES];
+                if (hitDetectLine(i, cursorLevelPosX, cursorLevelPosY)) {
+                    printf("Hit on line %d\n", i);
+                    selectedObjectID = i;
+                    //[self updatePropertiesPanel];
+                    [self setNeedsDisplay:YES];
                 }
             }
+        }
             break;
         default:
             break;
@@ -297,9 +299,9 @@ NSNotificationCenter *nc;
     switch (_editMode) {
         case EDIT_MODE_PAN:
         {
-            // ghetto scrolling
-            viewportX = ceil(viewportX + (z*(lastMouse.x-pointInView.x)));
-            viewportY = ceil(viewportY + (z*(lastMouse.y-pointInView.y)));
+            // "scrolling"
+            viewportX = round(viewportX + (z*(lastMouse.x-pointInView.x)));
+            viewportY = round(viewportY + (z*(lastMouse.y-pointInView.y)));
             //printf("viewport is at %d, %d\n", viewportX, viewportY);
             lastMouse = pointInView;
 
@@ -309,8 +311,6 @@ NSNotificationCenter *nc;
             [nc postNotificationName:MDEMapViewChangedNotification
                               object:self
                             userInfo:d];
-            
-            //NSLog(@"Sending notification: %@", MDEMapViewChangedNotification);
             break;
         }
         case EDIT_MODE_THINGS:
@@ -346,21 +346,24 @@ NSNotificationCenter *nc;
 
 #pragma Utilities
 
+double pointDistance(int x1, int y1, int x2, int y2)
+{
+    // calculate the hypotenuse to find the distance
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
+
 int hitDetectLine(int line, int testx, int testy)
 {
-    int dotProduct;
+    double buffer = 3; // how close we must be to being on in the line
+    double d1 = pointDistance(testx, testy, vertexes[linedefs[line].end].x, vertexes[linedefs[line].end].y);
+    double d2 = pointDistance(testx, testy, vertexes[linedefs[line].start].x, vertexes[linedefs[line].start].y);
+    double ll = pointDistance(vertexes[linedefs[line].end].x, vertexes[linedefs[line].end].y, vertexes[linedefs[line].start].x, vertexes[linedefs[line].start].y);
     
-    dotProduct = abs(((vertexes[linedefs[line].end].x - vertexes[linedefs[line].start].x) * (testy - vertexes[linedefs[line].start].y))
-                     - ((vertexes[linedefs[line].end].y - vertexes[linedefs[line].start].y) * (testx - vertexes[linedefs[line].start].x)));
-    if (dotProduct < 100) {
-        printf("## Possibly got it! ##");
-        printf("Dot Product of line %d: %d\n", line, dotProduct);
-        printf("Cursor: %d, %d\n", testx, testy);
-        printf("Line from %d, %d to %d, %d\n", vertexes[linedefs[line].start].y, vertexes[linedefs[line].start].y, vertexes[linedefs[line].end].x, vertexes[linedefs[line].end].y);
-        return line;
+    if (d1 + d2 >= ll - buffer && d1 + d2 <= ll + buffer) {
+        return true;
+    } else {
+        return false;
     }
-    
-    return -1;
 }
 
 @end
