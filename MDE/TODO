@@ -20,30 +20,37 @@
 + Vertex properties panel works
 + Things properties panel works
 + Vertex/Thing panels update on drag
++ Line length calculation
++ Line hit detection
++ Highlight for lines
++ Merge LineDef/SideDef editing
++ Make lines draggable
 
 Where I left off last:
+    Show thing textures
     Finish wiring up sides/lines properties panels
-    Line length calculation
-    Line hit detection
     Bring over things.h/things.c from DEU for type lookups and names of things
-    
+    Sectors: hit detection, panels, highlights
+
 Refactoring:
     SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
     Move statement 'selectedObject = x' to 'selectObject(x)' function
     Change thing[id].value = foo to changeThing(id, value)
-    
+    Functions for window coords -> map coords
+
 Next up:
 
- Functions for window coords -> map coords
+ Colorize things according to DEU header files
  Thing detail window
  Vertex detail window
 
+ Sprite browser
+ Floor/ceiling browser
+ Wall texture browser
+
  Load wall textures (encoded like sprites)
  Make functions for seeking/reading WAD files
- Hit detection for lines
- Highlight for lines
-
- Merge LineDef/SideDef editing
+ 
  Check if elements to draw are in the viewport or not
  Implement buckets for verts etc
  Draw grid

@@ -264,7 +264,7 @@ NSNotificationCenter *nc;
                 if (hitDetectLine(i, cursorLevelPosX, cursorLevelPosY)) {
                     printf("Hit on line %d\n", i);
                     selectedObjectID = i;
-                    //[self updatePropertiesPanel];
+                    [self updatePropertiesPanel];
                     [self setNeedsDisplay:YES];
                 }
             }
@@ -277,25 +277,12 @@ NSNotificationCenter *nc;
 
 - (void) mouseDown:(NSEvent *)theEvent
 {
-    //NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-    switch (_editMode) {
-        case EDIT_MODE_PAN:
-            //NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-            lastMouse = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-            // subtract the difference from viewport coords to get new coords
-            break;
-        default:
-            printf("mouseDown event\n");
-            //printf("Mouse is at view coords: %f, %f\n", pointInView.x, pointInView.y); // x,y inside of mapview
-            //printf("Mouse is at level coords: %f, %f\n", viewportX + pointInView.x, viewportY + pointInView.y);
-            break;
-    }
+    lastMouse = [self convertPoint:[theEvent locationInWindow] fromView:nil];
 }
 
 - (void) mouseDragged:(NSEvent *)theEvent
 {
     NSPoint pointInView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-
     switch (_editMode) {
         case EDIT_MODE_PAN:
         {
@@ -335,6 +322,18 @@ NSNotificationCenter *nc;
             }
             break;
         }
+        case EDIT_MODE_LINEDEFS:
+        {
+            if (selectedObjectID > -1) {
+                vertexes[linedefs[selectedObjectID].start].x += (int)(z*(pointInView.x-lastMouse.x));
+                vertexes[linedefs[selectedObjectID].start].y += (int)(z*(pointInView.y-lastMouse.y));
+                vertexes[linedefs[selectedObjectID].end].x += (int)(z*(pointInView.x-lastMouse.x));
+                vertexes[linedefs[selectedObjectID].end].y += (int)(z*(pointInView.y-lastMouse.y));
+                [self updatePropertiesPanel];
+                [self setNeedsDisplay:YES];
+            }
+            break;
+        }
         default:
         {
             break;
@@ -342,6 +341,7 @@ NSNotificationCenter *nc;
     }
     [self setNeedsDisplay:YES];
     [self superview];
+    lastMouse = pointInView;
 }
 
 #pragma Utilities

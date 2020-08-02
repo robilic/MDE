@@ -107,12 +107,13 @@ int foobar(void) {
         }
         //printf("%.*s ", 8, directory[i].name);
     }
+    printf("Loaded %d things, %d linedefs, %d sidedefs, %d vertexes\n", things_count, linedefs_count, sidedefs_count, vertexes_count);
     
     //
     // load color palette
     for (int i = 0; i < header.dirsize; i++) {
         if (!strncmp("PLAYPAL", directory[i].name, 7)) {
-            printf("\nFound PLAYPAL! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
+            //printf("Found PLAYPAL! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
             palette = malloc(sizeof(char) * 768); // we only need the first palette
             fseek(wadFile, directory[i].start, SEEK_SET);
             fread(palette, 768, 1, wadFile);
@@ -130,7 +131,7 @@ int foobar(void) {
     // load floor and ceiling textures, count them first. find the start of textures
     for (int i = 0; i < header.dirsize; i++) {
         if (!strncmp("F1_START", directory[i].name, 7)) {
-            printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
+            //printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
             textures_pointer = i + 1;
             break;
         }
@@ -145,8 +146,8 @@ int foobar(void) {
         textures_count = i - textures_pointer;
     }
 
-    printf("Next entry is %.*s\n", 8, directory[textures_pointer].name);
-    printf("Total textures found = %d\n", textures_count);
+    // printf("Next entry is %.*s\n", 8, directory[textures_pointer].name);
+    printf("Found %d floor/ceiling textures\n", textures_count);
 
     fseek(wadFile, directory[textures_pointer].start, SEEK_SET);
     textures = malloc(sizeof(Texture) * textures_count);
@@ -156,14 +157,7 @@ int foobar(void) {
         // now the image data
         fread(textures[i].data, 4096, 1, wadFile);
     }
-    // for debugging
-    /*
-    for (int i = 0; i < textures_count; i++) {
-        printf("Texture %d is %.*s\n", i, 8, textures[i].name);
-    }
-    */
-    
-    //
+
     // load sprites
     for (int i = 0; i < header.dirsize; i++) {
         if (!strncmp("S_START", directory[i].name, 7)) {
