@@ -25,12 +25,14 @@
 + Highlight for lines
 + Merge LineDef/SideDef editing
 + Make lines draggable
++ Bring over things.h/things.c from DEU for type lookups and names of things
 
 Where I left off last:
-    Show thing textures
     Finish wiring up sides/lines properties panels
-    Bring over things.h/things.c from DEU for type lookups and names of things
-    Sectors: hit detection, panels, highlights
+    Started on grid.
+    Grid doesn't get along with scaling
+    Wire grid drop-down to gridSize variable
+    Fix off-by-one bug with grid when in negative viewport coordinates
 
 Refactoring:
     SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
@@ -43,17 +45,18 @@ Next up:
  Colorize things according to DEU header files
  Thing detail window
  Vertex detail window
-
  Sprite browser
  Floor/ceiling browser
  Wall texture browser
+ Draw grid
 
  Load wall textures (encoded like sprites)
  Make functions for seeking/reading WAD files
+
+ Implement sectors: hit detection, panels, highlights
  
  Check if elements to draw are in the viewport or not
  Implement buckets for verts etc
- Draw grid
  Show x/y for mouse cursor
  Implement the viewport thumbnail
  Limit scrolling to 65,536 x 65,536

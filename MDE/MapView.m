@@ -35,6 +35,7 @@ NSNotificationCenter *nc;
     float z;                // this is the zoom/scale setting...needs a new name
     float c;                // generic color variable until we find out 'smarter' colors
     int selectedObjectID;   // object which is currently selected
+    int gridSize;
 }
 
 - (void) awakeFromNib {
@@ -44,6 +45,7 @@ NSNotificationCenter *nc;
     _editMode = EDIT_MODE_PAN;
     nc = [NSNotificationCenter defaultCenter];
     selectedObjectID = -1;
+    gridSize = 64;
 }
 
 - (void) viewDidMoveToWindow
@@ -79,6 +81,34 @@ NSNotificationCenter *nc;
     // Draw background
     [[NSColor blackColor] setFill];
     NSRectFill(dirtyRect);
+    
+    // Draw grid
+    int gridStartX, gridStartY;
+    int gridOffsetX = viewportX % gridSize;
+    int gridOffsetY = viewportY % gridSize;
+    NSRect viewRect = [self bounds];
+    
+    gridStartX = gridSize - gridOffsetX;
+    gridStartY = gridSize - gridOffsetY;
+    printf("viewPort: %d, %d, offsets: %d, %d, grid size: %d, view is %fx%f\n", viewportX, viewportY, gridOffsetX, gridOffsetY, gridSize, viewRect.size.width, viewRect.size.height);
+    
+    [[NSColor blueColor] setStroke];
+    NSBezierPath *path = [NSBezierPath bezierPath];
+    
+    for (int x = gridStartX; x < viewRect.size.width; x += gridSize) {
+        [path moveToPoint:CGPointMake(x, 0)];
+        [path lineToPoint:CGPointMake(x, viewRect.size.height)];
+    }
+    for (int y = gridStartY; y < viewRect.size.height; y += gridSize) {
+        [path moveToPoint:CGPointMake(0, y)];
+        [path lineToPoint:CGPointMake(viewRect.size.width, y)];
+    }
+    [path closePath];
+    [path stroke];
+    
+    
+    //[[NSColor blueColor] setStroke];
+    
     // draw LINEDEFS
     for (int i = 0; i < linedefs_count; i++) {
         start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (vertexes[linedefs[i].start].y-viewportY) / z);
@@ -104,7 +134,7 @@ NSNotificationCenter *nc;
     
     // draw THINGS
     NSRect highlight;
-    NSBezierPath *path;
+    //NSBezierPath *path;
 
     for (int i = 0; i < things_count; i++) {
         [[NSColor yellowColor] set];
