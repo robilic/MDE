@@ -82,24 +82,25 @@ NSNotificationCenter *nc;
     [[NSColor blackColor] setFill];
     NSRectFill(dirtyRect);
     
+    float zoomedGridSize = (gridSize / z);
     // Draw grid
     int gridStartX, gridStartY;
     int gridOffsetX = viewportX % gridSize;
     int gridOffsetY = viewportY % gridSize;
     NSRect viewRect = [self bounds];
     
-    gridStartX = gridSize - gridOffsetX;
-    gridStartY = gridSize - gridOffsetY;
+    gridStartX = (gridSize - gridOffsetX) / z;
+    gridStartY = (gridSize - gridOffsetY) / z;
     printf("viewPort: %d, %d, offsets: %d, %d, grid size: %d, view is %fx%f\n", viewportX, viewportY, gridOffsetX, gridOffsetY, gridSize, viewRect.size.width, viewRect.size.height);
     
-    [[NSColor blueColor] setStroke];
+    [[NSColor darkGrayColor] setStroke];
     NSBezierPath *path = [NSBezierPath bezierPath];
     
-    for (int x = gridStartX; x < viewRect.size.width; x += gridSize) {
+    for (int x = gridStartX; x < viewRect.size.width; x += zoomedGridSize) {
         [path moveToPoint:CGPointMake(x, 0)];
         [path lineToPoint:CGPointMake(x, viewRect.size.height)];
     }
-    for (int y = gridStartY; y < viewRect.size.height; y += gridSize) {
+    for (int y = gridStartY; y < viewRect.size.height; y += zoomedGridSize) {
         [path moveToPoint:CGPointMake(0, y)];
         [path lineToPoint:CGPointMake(viewRect.size.width, y)];
     }
