@@ -85,12 +85,26 @@ NSNotificationCenter *nc;
     float zoomedGridSize = (gridSize / z);
     // Draw grid
     int gridStartX, gridStartY;
-    int gridOffsetX = viewportX % gridSize;
-    int gridOffsetY = viewportY % gridSize;
+    int gridOffsetX, gridOffsetY;
+    
+    gridOffsetX = viewportX % gridSize;
+    gridOffsetY = viewportY % gridSize;
+
     NSRect viewRect = [self bounds];
     
-    gridStartX = (gridSize - gridOffsetX) / z;
-    gridStartY = (gridSize - gridOffsetY) / z;
+    // this fixes the missing first grid squares when on the negative side of the map
+    if (viewportX > 0) {
+        gridStartX = (gridSize - gridOffsetX) / z;
+    } else {
+        gridStartX = ((gridSize - gridOffsetX) - gridSize) / z;
+    }
+    
+    if (viewportY > 0) {
+        gridStartY = (gridSize - gridOffsetY) / z;
+    } else {
+        gridStartY = ((gridSize - gridOffsetY) - gridSize) / z;
+    }
+    
     printf("viewPort: %d, %d, offsets: %d, %d, grid size: %d, view is %fx%f\n", viewportX, viewportY, gridOffsetX, gridOffsetY, gridSize, viewRect.size.width, viewRect.size.height);
     
     [[NSColor darkGrayColor] setStroke];
