@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "mde_config.h"
 #include "wadfile.h"
 #include "editor.h"
 
@@ -44,11 +45,6 @@ int things_count, linedefs_count, sidedefs_count, vertexes_count, sprites_count,
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 }
 
-int foobar(void) {
-    NSLog(@"Boom!");
-    return 0;
-}
-
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
     // Insert code here to initialize your application
     FILE *wadFile;
@@ -59,9 +55,8 @@ int foobar(void) {
 
     textures_count = 0;
     sprites_count = 0;
-    
-    wadFile = fopen("/Users/robert/Downloads/Doom/Proj/DOOM1.WAD", "r");
-    foobar();
+
+    wadFile = fopen(WADFILE_PATH, "r");
     
     if (wadFile == NULL) {
         NSLog(@".WAD file not found :(");
@@ -80,7 +75,7 @@ int foobar(void) {
     
     // find the desired level and load the data for it
     for (int i = 0; i < header.dirsize; i++) {
-        if (!strncmp("E1M5", directory[i].name, 4)) {
+        if (!strncmp("E1M6", directory[i].name, 4)) {
             // printf("\nFound it! Entry #%d %d %d\n", i, directory[i].start, directory[i].size);
             // fread(void *restrict __ptr, size_t __size, size_t __nitems, FILE *restrict __stream)
             // printf("THINGS struct is %lu bytes each\n", sizeof(Thing));

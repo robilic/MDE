@@ -26,20 +26,25 @@
 + Merge LineDef/SideDef editing
 + Make lines draggable
 + Bring over things.h/things.c from DEU for type lookups and names of things
++ Started on grid.
++ Grid doesn't get along with scaling
++ Fix off-by-one bug with grid when in negative viewport coordinates
++ Check if elements to draw are in the viewport or not
 
 Where I left off last:
+    Fix properties panel when resizing
+    Sync Scale drop down on startup
     Finish wiring up sides/lines properties panels
-    Started on grid.
-    Grid doesn't get along with scaling
     Wire grid drop-down to gridSize variable
-    Fix off-by-one bug with grid when in negative viewport coordinates
 
 Refactoring:
-    SelectedObject needs to be a more complex variable. Indicating type as well as ID. isSelected as well?
+    Does SelectedObject need to be a more complex variable. Indicating type as well as ID. isSelected?
     Move statement 'selectedObject = x' to 'selectObject(x)' function
     Change thing[id].value = foo to changeThing(id, value)
     Functions for window coords -> map coords
-
+        (vertexes[i].x-viewportX)/z
+        screenCoordX(vertexes[i].x)
+        return (x - viewportX)/z
 Next up:
 
  Colorize things according to DEU header files
@@ -55,7 +60,6 @@ Next up:
 
  Implement sectors: hit detection, panels, highlights
  
- Check if elements to draw are in the viewport or not
  Implement buckets for verts etc
  Show x/y for mouse cursor
  Implement the viewport thumbnail
@@ -69,3 +73,12 @@ Hotkeys:
  ?
 
 
+Doom Shareware Levels
+Loaded 138 things, 475 linedefs, 648 sidedefs, 467 vertexes
+Loaded 262 things, 1033 linedefs, 1323 sidedefs, 942 vertexes
+Loaded 380 things, 1026 linedefs, 1326 sidedefs, 946 vertexes
+Loaded 254 things, 830 linedefs, 1054 sidedefs, 780 vertexes
+Loaded 293 things, 825 linedefs, 1053 sidedefs, 746 vertexes
+Loaded 463 things, 1352 linedefs, 1727 sidedefs, 1207 vertexes * E1M6 is the most complicated map
+Loaded 358 things, 958 linedefs, 1223 sidedefs, 896 vertexes
+Loaded 126 things, 333 linedefs, 511 sidedefs, 328 vertexes

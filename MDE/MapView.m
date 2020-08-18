@@ -35,12 +35,15 @@ NSNotificationCenter *nc;
     float z;                // this is the zoom/scale setting...needs a new name
     float c;                // generic color variable until we find out 'smarter' colors
     int selectedObjectID;   // object which is currently selected
-    int gridSize;
+    int gridSize;           // size of the grid
+    float zoomedGridSize;   // size of the grid in zoomed pixels
+    int gridStartX, gridStartY;
+    int gridOffsetX, gridOffsetY;
 }
 
 - (void) awakeFromNib {
     printf("AwakeFromNib()\n");
-    z = 3;
+    z = 3; // zoom
     viewportX = viewportY = -1000;
     _editMode = EDIT_MODE_PAN;
     nc = [NSNotificationCenter defaultCenter];
@@ -73,25 +76,12 @@ NSNotificationCenter *nc;
     [self setNeedsDisplay:YES];
 }
 
-- (void) drawRect:(NSRect)dirtyRect
-{
-    NSPoint start, end;
-    [super drawRect:dirtyRect];
-
-    // Draw background
-    [[NSColor blackColor] setFill];
-    NSRectFill(dirtyRect);
-    
-    float zoomedGridSize = (gridSize / z);
-    // Draw grid
-    int gridStartX, gridStartY;
-    int gridOffsetX, gridOffsetY;
-    
+- (void) drawGrid:(NSRect)viewRect {
+    zoomedGridSize = (gridSize / z);
     gridOffsetX = viewportX % gridSize;
     gridOffsetY = viewportY % gridSize;
-
-    NSRect viewRect = [self bounds];
     
+    // Draw grid
     // this fixes the missing first grid squares when on the negative side of the map
     if (viewportX > 0) {
         gridStartX = (gridSize - gridOffsetX) / z;
@@ -105,7 +95,7 @@ NSNotificationCenter *nc;
         gridStartY = ((gridSize - gridOffsetY) - gridSize) / z;
     }
     
-    printf("viewPort: %d, %d, offsets: %d, %d, grid size: %d, view is %fx%f\n", viewportX, viewportY, gridOffsetX, gridOffsetY, gridSize, viewRect.size.width, viewRect.size.height);
+    //printf("viewPort: %d, %d, offsets: %d, %d, grid size: %d, view is %fx%f\n", viewportX, viewportY, gridOffsetX, gridOffsetY, gridSize, viewRect.size.width, viewRect.size.height);
     
     [[NSColor darkGrayColor] setStroke];
     NSBezierPath *path = [NSBezierPath bezierPath];
@@ -120,47 +110,85 @@ NSNotificationCenter *nc;
     }
     [path closePath];
     [path stroke];
-    
-    
-    //[[NSColor blueColor] setStroke];
-    
+}
+
+- (BOOL) isPointInView:(NSRect)viewRect x:(float)x y:(float)y {
+    if (x >= 0 && x <= viewRect.size.width) {
+        if (y >= 0 && y <= viewRect.size.height) {
+//            printf("Point %f,%f is INSIDE view\n", x, y);
+            return true;
+        }
+    }
+//    printf("Point %f,%f is OUTSIDE view\n", x, y);
+    return false;
+}
+
+- (void) drawLineDefs:(NSRect)viewRect {
+    NSPoint start, end;
     // draw LINEDEFS
     for (int i = 0; i < linedefs_count; i++) {
         start = NSMakePoint((vertexes[linedefs[i].start].x-viewportX) / z, (vertexes[linedefs[i].start].y-viewportY) / z);
         end   = NSMakePoint((vertexes[linedefs[i].end].x-viewportX) / z, (vertexes[linedefs[i].end].y-viewportY) / z);
-        c = 50 + (sidedefs[linedefs[i].sidedef1].sector * 2);
-        //printf("%f %f ", c, c/256);
-        [[NSColor colorWithDeviceRed:0.8 green:c/225 blue:c/256 alpha:1.0] set];
-        [NSBezierPath strokeLineFromPoint:start toPoint:end];
+        if ([self isPointInView:viewRect x:start.x y:start.y] || [self isPointInView:viewRect x:end.x y:end.y]) {
+            c = 50 + (sidedefs[linedefs[i].sidedef1].sector * 2);
+            //printf("%f %f ", c, c/256);
+            [[NSColor colorWithDeviceRed:0.8 green:c/225 blue:c/256 alpha:1.0] set];
+            [NSBezierPath strokeLineFromPoint:start toPoint:end];
+        }
     }
-    
+}
+
+- (void) drawThings:(NSRect)viewRect {
+    // draw THINGS
+    NSRect highlight;
+    NSBezierPath *path = [NSBezierPath bezierPath];
+    [[NSColor yellowColor] set];
+
+    for (int i = 0; i < things_count; i++) {
+        if ([self isPointInView:viewRect x:(things[i].xpos-viewportX)/z y:(things[i].ypos-viewportY)/z]) {
+            highlight = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((things[i].ypos-viewportY)/z)-3, 6, 6);
+            path = [NSBezierPath bezierPath];
+            [path appendBezierPathWithOvalInRect: highlight];
+            [path stroke];
+        }
+    }
+}
+
+- (void) drawVertexes:(NSRect)viewRect {
     // draw VERTEXES
     NSRect v;
     NSBezierPath *vPath;
+    [[NSColor grayColor] set];
 
     for (int i = 0; i < vertexes_count; i++) {
-        [[NSColor grayColor] set];
-        v = NSMakeRect(((vertexes[i].x-viewportX)/z)-1, ((vertexes[i].y-viewportY)/z)-1, 2, 2);
-        vPath = [NSBezierPath bezierPath];
-        [vPath appendBezierPathWithOvalInRect: v];
-        [vPath stroke];
+        if ([self isPointInView:viewRect x:(vertexes[i].x-viewportX)/z y:(vertexes[i].y-viewportY)/z]) {
+            v = NSMakeRect(((vertexes[i].x-viewportX)/z)-1, ((vertexes[i].y-viewportY)/z)-1, 2, 2);
+            vPath = [NSBezierPath bezierPath];
+            [vPath appendBezierPathWithOvalInRect: v];
+            [vPath stroke];
+        }
     }
-    // NOT IMPLEMENTED
-    
-    // draw THINGS
-    NSRect highlight;
-    //NSBezierPath *path;
+}
 
-    for (int i = 0; i < things_count; i++) {
-        [[NSColor yellowColor] set];
-        highlight = NSMakeRect(((things[i].xpos-viewportX)/z)-3, ((things[i].ypos-viewportY)/z)-3, 6, 6);
-        path = [NSBezierPath bezierPath];
-        [path appendBezierPathWithOvalInRect: highlight];
-        [path stroke];
-    }
+- (void) drawRect:(NSRect)dirtyRect
+{
+    [super drawRect:dirtyRect];
+    NSRect viewRect = [self bounds];
+    NSBezierPath *path = [NSBezierPath bezierPath];
+    NSRect highlight;
+    
+    // Draw background
+    [[NSColor blackColor] setFill];
+    NSRectFill(dirtyRect);
+    
+    [self drawGrid:viewRect];
+    [self drawLineDefs:viewRect];
+    [self drawThings:viewRect];
+    [self drawVertexes:viewRect];
     
     // draw highlighted entity
     // if MODE == "foo" ...
+    NSPoint start, end;
     if (selectedObjectID > -1) {
         switch (_editMode) {
             case EDIT_MODE_THINGS:
@@ -307,7 +335,7 @@ NSNotificationCenter *nc;
         case EDIT_MODE_LINEDEFS: {
             for (int i = 0; i < linedefs_count; i++) {
                 if (hitDetectLine(i, cursorLevelPosX, cursorLevelPosY)) {
-                    printf("Hit on line %d\n", i);
+                    //printf("Hit on line %d\n", i);
                     selectedObjectID = i;
                     [self updatePropertiesPanel];
                     [self setNeedsDisplay:YES];
@@ -348,7 +376,7 @@ NSNotificationCenter *nc;
         case EDIT_MODE_THINGS:
         {
             if (selectedObjectID > -1) {
-                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObjectID, things[selectedObjectID].xpos, things[selectedObjectID].ypos, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
+                //printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObjectID, things[selectedObjectID].xpos, things[selectedObjectID].ypos, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
                 things[selectedObjectID].xpos = viewportX + (int)(z*pointInView.x);
                 things[selectedObjectID].ypos = viewportY + (int)(z*pointInView.y);
                 [self updatePropertiesPanel];
@@ -359,7 +387,7 @@ NSNotificationCenter *nc;
         case EDIT_MODE_VERTEXES:
         {
             if (selectedObjectID > -1) {
-                printf("Started drag of THING %d at %d, %d, dragging to %d, %d\n", selectedObjectID, vertexes[selectedObjectID].x, vertexes[selectedObjectID].y, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
+                //printf("Started drag of VERTEX %d at %d, %d, dragging to %d, %d\n", selectedObjectID, vertexes[selectedObjectID].x, vertexes[selectedObjectID].y, viewportX + (int)pointInView.x, viewportY + (int)pointInView.y);
                 vertexes[selectedObjectID].x = viewportX + (int)(z*pointInView.x);
                 vertexes[selectedObjectID].y = viewportY + (int)(z*pointInView.y);
                 [self updatePropertiesPanel];
